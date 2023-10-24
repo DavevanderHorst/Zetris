@@ -6,17 +6,30 @@ import Dict exposing (Dict)
 type alias Model =
     -- Main model
     { windowSize : Size
-    , playField : Dict String Cell
+    , error : Maybe String
+    , gameModel : GameModel
+    }
+
+
+type alias GameModel =
+    { playField : Dict String Cell
     , tempPlayField : Maybe (Dict String Cell)
     , currentBrickModel : Maybe BrickModel
-    , error : Maybe String
+    , gameClock : List GameCommand
     }
 
 
 type alias BrickModel =
-    { currentForm : BrickForm
-    , currentDirection : Direction
+    { form : BrickForm
+    , direction : Direction
+    , baseRow : Int
+    , baseColumn : Int
+    , playFieldDictKeys : List String
     }
+
+
+type GameCommand
+    = DropBrick
 
 
 type BrickForm

@@ -8,3 +8,12 @@ isEven number =
 
     else
         False
+
+
+addToFrontOfList : a -> List a -> List a
+addToFrontOfList toAdd list =
+    let
+        reversedList =
+            List.reverse list
+    in
+    List.reverse <| toAdd :: reversedList

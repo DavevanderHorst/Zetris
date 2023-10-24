@@ -1,8 +1,9 @@
 module Functions.Playfield exposing (..)
 
 import Dict exposing (Dict)
-import Models exposing (BrickForm(..), BrickModel, Cell, Color(..))
-import PlayFieldSizes exposing (middleColumnCellNumber)
+import Functions.Base exposing (isEven)
+import Functions.Colors exposing (cellColorToString, getBrickFormColor)
+import Models exposing (BrickForm(..), BrickModel, Cell, Color(..), Direction(..), GameModel, Model)
 
 
 makePlayFieldDictKey : Int -> Int -> String
@@ -25,42 +26,81 @@ getRowAndColNumberFromPlayFieldDictKey key =
     ( Maybe.withDefault 0 (String.toInt rowNumberString), Maybe.withDefault 0 (String.toInt colNumberString) )
 
 
-setNewBrickInPlayField : Dict String Cell -> BrickModel -> Dict String Cell
-setNewBrickInPlayField playField brickModel =
-    case brickModel.currentForm of
+createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
+createPlayFieldDictKeysForBrickForm row col form =
+    case form of
         Square ->
-            setSquareInPlayField middleColumnCellNumber playField
+            createSquarePlayFieldDictKeys row col
 
 
-setSquareInPlayField : Int -> Dict String Cell -> Dict String Cell
-setSquareInPlayField startColumnNumber playField =
+createSquarePlayFieldDictKeys : Int -> Int -> List String
+createSquarePlayFieldDictKeys startRowNumber startColumnNumber =
     let
-        firstSet =
-            setBrick Square 1 startColumnNumber playField
+        firstKey =
+            makePlayFieldDictKey startRowNumber startColumnNumber
 
-        secondSet =
-            setBrick Square 2 startColumnNumber firstSet
+        upRowColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
 
-        thirdSet =
-            setBrick Square 2 (startColumnNumber - 1) secondSet
+            else
+                startColumnNumber - 1
+
+        upRowNumber =
+            startRowNumber - 1
+
+        secondKey =
+            makePlayFieldDictKey upRowNumber upRowColumnNumber
+
+        thirdKey =
+            makePlayFieldDictKey upRowNumber (upRowColumnNumber + 1)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber - 2) startColumnNumber
     in
-    setBrick Square 3 startColumnNumber thirdSet
+    [ firstKey, secondKey, thirdKey, fourthKey ]
 
 
-setBrick : BrickForm -> Int -> Int -> Dict String Cell -> Dict String Cell
-setBrick form row col playField =
+setBrickInPlayField : BrickModel -> Dict String Cell -> Dict String Cell
+setBrickInPlayField brick playField =
     let
-        key =
-            makePlayFieldDictKey row col
-
         color =
-            getBrickFormColor form
+            getBrickFormColor brick.form
     in
+    List.foldl (setCellInPlayField color) playField brick.playFieldDictKeys
+
+
+setCellInPlayField : Color -> String -> Dict String Cell -> Dict String Cell
+setCellInPlayField color key playField =
     Dict.insert key (Cell color) playField
 
 
-getBrickFormColor : BrickForm -> Color
-getBrickFormColor form =
-    case form of
-        Square ->
-            Red
+canBrickBePlacedInPlayField : List String -> Dict String Cell -> ( Bool, String )
+canBrickBePlacedInPlayField keys playField =
+    List.foldl (isCellEmpty playField) ( True, "" ) keys
+
+
+isCellEmpty : Dict String Cell -> String -> ( Bool, String ) -> ( Bool, String )
+isCellEmpty dict key result =
+    let
+        ( isOk, _ ) =
+            result
+    in
+    if isOk then
+        let
+            cellResult =
+                Dict.get key dict
+        in
+        case cellResult of
+            Nothing ->
+                ( False, "No cell found for key : " ++ key )
+
+            Just cell ->
+                if cell.color == White then
+                    result
+
+                else
+                    ( False, "Cell has wrong color : " ++ cellColorToString cell.color )
+
+    else
+        result

@@ -2,12 +2,13 @@ module View exposing (..)
 
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
+import Functions.Colors exposing (cellColorToString)
 import Functions.Playfield exposing (getRowAndColNumberFromPlayFieldDictKey)
 import Html exposing (Html, button, div, text)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
-import Models exposing (Cell, Color(..), Model)
+import Models exposing (BrickForm(..), BrickModel, Cell, Color(..), Direction(..), Model)
 import PlayFieldSizes
     exposing
         ( cellSizeInPxString
@@ -35,13 +36,42 @@ view model =
             , Attr.style "background-color" "black"
             ]
             [ renderPlayField model ]
-        , case model.error of
-            Nothing ->
-                div [] []
+        , let
+            brickModel =
+                Maybe.withDefault emptyBrickModel model.gameModel.currentBrickModel
+          in
+          div []
+            [ case model.error of
+                Nothing ->
+                    div [] []
 
-            Just error ->
-                div [] [ text error ]
+                Just error ->
+                    div [] [ text error ]
+            , div [] [ text ("direction : " ++ directionToString brickModel.direction) ]
+            , div [] [ text ("row : " ++ String.fromInt brickModel.baseRow) ]
+            , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
+            ]
         ]
+
+
+emptyBrickModel : BrickModel
+emptyBrickModel =
+    { form = Square
+    , direction = Left
+    , baseRow = 0
+    , baseColumn = 0
+    , playFieldDictKeys = []
+    }
+
+
+directionToString : Direction -> String
+directionToString direction =
+    case direction of
+        Left ->
+            "left"
+
+        Right ->
+            "right"
 
 
 renderPlayField : Model -> Html Msg
@@ -66,7 +96,7 @@ renderPlayFieldRow : Int -> Dict Int Cell -> Html Msg
 renderPlayFieldRow rowNumber row =
     let
         newRow =
-            Dict.foldl renderCell [] row
+            Dict.foldr renderCell [] row
 
         finishedRow =
             if isEven rowNumber then
@@ -101,7 +131,7 @@ renderCell : key -> Cell -> List (Html Msg) -> List (Html Msg)
 renderCell _ cell htmlList =
     let
         cellColor =
-            getCellColor cell.color
+            cellColorToString cell.color
 
         newCell =
             div
@@ -125,7 +155,7 @@ makeViewPlayField : Model -> Dict Int (Dict Int Cell)
 makeViewPlayField model =
     let
         fieldToUse =
-            Maybe.withDefault model.playField model.tempPlayField
+            Maybe.withDefault model.gameModel.playField model.gameModel.tempPlayField
     in
     Dict.foldl insertCell Dict.empty fieldToUse
 
@@ -148,13 +178,3 @@ insertCell key value dict =
                     Dict.insert colNumber value rowDict
     in
     Dict.insert rowNumber colDict dict
-
-
-getCellColor : Color -> String
-getCellColor color =
-    case color of
-        White ->
-            "white"
-
-        Red ->
-            "red"

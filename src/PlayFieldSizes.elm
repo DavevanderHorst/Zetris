@@ -1,15 +1,15 @@
 module PlayFieldSizes exposing (..)
 
 
+maximumRows : Int
+maximumRows =
+    27
+
+
 unevenRowColumnCells : Int
 unevenRowColumnCells =
     -- also start row, must be uneven, so we have a middle point
     15
-
-
-middleColumnCellNumber : Int
-middleColumnCellNumber =
-    Basics.round (toFloat unevenRowColumnCells / 2)
 
 
 evenRowColumnCells : Int
@@ -17,9 +17,13 @@ evenRowColumnCells =
     unevenRowColumnCells - 1
 
 
-cellsInHeight : Int
-cellsInHeight =
-    27
+middleColumnCellNumber : Int
+middleColumnCellNumber =
+    7
+
+
+
+--Basics.round (toFloat unevenRowColumnCells / 2)
 
 
 cellSize : Int
@@ -46,11 +50,6 @@ playFieldBorderPaddingInPx =
 cellSizeInPxString : String
 cellSizeInPxString =
     String.fromInt cellSize ++ "px"
-
-
-cellLeftPaddingInPxString : String
-cellLeftPaddingInPxString =
-    String.fromInt cellLeftPaddingInPx
 
 
 playFieldBorderPaddingInPxString : String
@@ -101,12 +100,12 @@ playFieldHeightInPxString =
     --background padding + cell padding + 3/4 cell width
     let
         totalCellHeight =
-            (cellsInHeight - 1) * threeQuarterCellSize + cellSize
+            (maximumRows - 1) * threeQuarterCellSize + cellSize
 
         fieldPadding =
             2 * playFieldBorderPaddingInPx
 
         cellPadding =
-            (cellsInHeight - 1) * cellLeftPaddingInPx
+            (maximumRows - 1) * cellLeftPaddingInPx
     in
     String.fromInt (totalCellHeight + fieldPadding + cellPadding) ++ "px"
