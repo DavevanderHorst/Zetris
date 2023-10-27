@@ -3,7 +3,7 @@ module Timers exposing (..)
 
 gameClockWaitTime : Float
 gameClockWaitTime =
-    100
+    50
 
 
 brickDropTime : Float
@@ -16,3 +16,8 @@ startBrickDropTime : Float
 startBrickDropTime =
     -- 2 second
     2000
+
+
+activatePlayerInPutWaitTime : Float
+activatePlayerInPutWaitTime =
+    100

@@ -19,11 +19,7 @@ evenRowColumnCells =
 
 middleColumnCellNumber : Int
 middleColumnCellNumber =
-    7
-
-
-
---Basics.round (toFloat unevenRowColumnCells / 2)
+    Basics.round (toFloat unevenRowColumnCells / 2)
 
 
 cellSize : Int

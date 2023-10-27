@@ -1,13 +1,16 @@
 module Models exposing (..)
 
 import Dict exposing (Dict)
+import Functions.BrickForm exposing (BrickForm, FormType)
+import Functions.BrickMoveDirection exposing (BrickMoveDirection)
 
 
-type alias Model =
+type alias MainModel =
     -- Main model
     { windowSize : Size
     , error : Maybe String
     , gameModel : GameModel
+    , playerInput : PlayerInput
     }
 
 
@@ -21,24 +24,31 @@ type alias GameModel =
 
 type alias BrickModel =
     { form : BrickForm
-    , direction : Direction
+    , direction : BrickMoveDirection
     , baseRow : Int
     , baseColumn : Int
     , playFieldDictKeys : List String
+    , isActive : Bool
     }
+
+
+type PlayerInput
+    = Stopped
+    | Possible
 
 
 type GameCommand
     = DropBrick
+    | MoveLeft
+    | MoveRight
+    | MoveDown
+    | SwitchForm
 
 
-type BrickForm
-    = Square
-
-
-type Direction
-    = Left
-    | Right
+type Color
+    = White
+    | Red
+    | Orange
 
 
 type alias Cell =
@@ -60,8 +70,3 @@ type alias Size =
 startSize : Size
 startSize =
     Size 0 0
-
-
-type Color
-    = White
-    | Red

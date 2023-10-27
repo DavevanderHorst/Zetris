@@ -1,26 +1,29 @@
 module Functions.Random exposing (..)
 
-import Models exposing (BrickForm(..), Direction(..))
+import Functions.BrickForm exposing (BrickForm, squareStartForm, totalBrickTypes)
+import Functions.BrickMoveDirection exposing (BrickMoveDirection(..))
 import Random
 
 
 rollRandomBrickModel : Random.Generator ( Int, Int )
 rollRandomBrickModel =
     -- Fist is number of bricks we have, second is direction, left or right
-    Random.pair (Random.int 1 1) (Random.int 1 2)
+    -- TODO if a number is rolled, decrease the chance that it is rolled again, and higher all others
+    -- See random.weighted
+    Random.pair (Random.int 1 totalBrickTypes) (Random.int 1 2)
 
 
 tryGetBrickForm : Int -> Result String BrickForm
 tryGetBrickForm number =
     case number of
         1 ->
-            Ok Square
+            Ok squareStartForm
 
         _ ->
             Err ("Wrong number for brick form : " ++ String.fromInt number)
 
 
-tryGetRandomDirection : Int -> Result String Direction
+tryGetRandomDirection : Int -> Result String BrickMoveDirection
 tryGetRandomDirection number =
     case number of
         1 ->

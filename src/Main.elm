@@ -2,21 +2,23 @@ module Main exposing (main)
 
 import Browser
 import Browser.Dom exposing (Viewport)
-import Functions.Base exposing (addToFrontOfList)
-import Functions.Brick exposing (getStartRowNumberForBrickForm)
+import Browser.Events
+import Functions.Brick exposing (getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
 import Functions.GameClock exposing (tickGameClock)
 import Functions.GameCommand exposing (executeGameCommand)
-import Functions.GameModel exposing (trySetNewBrickInGameModel)
+import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, emptyGameClock, trySetNewBrickInGameModel)
+import Functions.MainModel exposing (setGameClockInMainModel)
 import Functions.Playfield exposing (createPlayFieldDictKeysForBrickForm)
 import Functions.Random exposing (rollRandomBrickModel, tryGetBrickForm, tryGetRandomDirection)
+import Json.Decode as Decode
 import Messages exposing (Msg(..))
-import Models exposing (BrickForm(..), BrickModel, Cell, Direction(..), GameCommand(..), Model, Size, startSize)
+import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, startSize)
 import PlayFieldGenerator exposing (initGameModel)
 import PlayFieldSizes exposing (middleColumnCellNumber)
 import Process
 import Random
 import Task
-import Timers exposing (brickDropTime, gameClockWaitTime)
+import Timers exposing (activatePlayerInPutWaitTime, brickDropTime, gameClockWaitTime)
 import View exposing (view)
 
 
@@ -29,26 +31,35 @@ main =
         }
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : MainModel -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Browser.Events.onKeyDown keyDecoder
 
 
-init : () -> ( Model, Cmd Msg )
+keyDecoder : Decode.Decoder Msg
+keyDecoder =
+    Decode.map KeyPressed (Decode.field "key" Decode.string)
+
+
+init : () -> ( MainModel, Cmd Msg )
 init _ =
     ( { windowSize = startSize
       , gameModel = initGameModel
       , error = Nothing
+      , playerInput = Stopped
       }
     , Task.perform GotViewport Browser.Dom.getViewport
     )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> MainModel -> ( MainModel, Cmd Msg )
 update msg model =
     case msg of
         GotViewport viewPort ->
             handleScreenSize viewPort.viewport.width viewPort.viewport.height model
+
+        KeyPressed key ->
+            handleKeyPressed key model
 
         StartGame ->
             ( model
@@ -60,6 +71,9 @@ update msg model =
 
         StartClock ->
             update Tick model
+
+        ActivatePlayerInput ->
+            ( { model | playerInput = Possible }, Cmd.none )
 
         Tick ->
             let
@@ -75,18 +89,10 @@ update msg model =
 
                 Just nextCommand ->
                     let
-                        oldGameModel =
-                            model.gameModel
-
-                        newGameModelResult =
-                            executeGameCommand nextCommand { oldGameModel | gameClock = newGameClock }
+                        newModel =
+                            setGameClockInMainModel newGameClock model
                     in
-                    case newGameModelResult of
-                        Ok newGameModel ->
-                            ( { model | gameModel = newGameModel }, nextTickCmd )
-
-                        Err error ->
-                            ( { model | error = Just error }, Cmd.none )
+                    executeGameCommand nextCommand newModel nextTickCmd
 
         NewBrick ( randomBrick, randomDirection ) ->
             case tryMakeBrickModel randomBrick randomDirection of
@@ -99,10 +105,13 @@ update msg model =
                     case newGameModelResult of
                         Ok newGameModel ->
                             let
+                                finishedGameModel =
+                                    emptyGameClock newGameModel
+
                                 fallingBrickCommand =
                                     Process.sleep brickDropTime |> Task.perform (always DropCurrentBrick)
                             in
-                            ( { model | gameModel = newGameModel }, fallingBrickCommand )
+                            ( { model | gameModel = finishedGameModel, playerInput = Possible }, fallingBrickCommand )
 
                         Err error ->
                             ( { model | error = Just error }, Cmd.none )
@@ -111,19 +120,17 @@ update msg model =
                     ( { model | error = Just error }, Cmd.none )
 
         DropCurrentBrick ->
-            let
-                newGameClock =
-                    addToFrontOfList DropBrick model.gameModel.gameClock
+            if isBrickActive model.gameModel.currentBrickModel then
+                let
+                    newGameModel =
+                        addGameCommandToFrontOfGameModelClock DropBrick model.gameModel
+                in
+                ( { model | gameModel = newGameModel }
+                , Process.sleep brickDropTime |> Task.perform (always DropCurrentBrick)
+                )
 
-                oldGameModel =
-                    model.gameModel
-
-                newGameModel =
-                    { oldGameModel | gameClock = newGameClock }
-            in
-            ( { model | gameModel = newGameModel }
-            , Process.sleep brickDropTime |> Task.perform (always DropCurrentBrick)
-            )
+            else
+                ( model, Random.generate NewBrick rollRandomBrickModel )
 
 
 tryMakeBrickModel : Int -> Int -> Result String BrickModel
@@ -149,7 +156,7 @@ tryMakeBrickModel randomBrickForm randomDirection =
                         playFieldDictKeys =
                             createPlayFieldDictKeysForBrickForm startRowNumber startColumnNumber brickForm
                     in
-                    Ok (BrickModel brickForm direction startRowNumber startColumnNumber playFieldDictKeys)
+                    Ok (BrickModel brickForm direction startRowNumber startColumnNumber playFieldDictKeys True)
 
                 Err error ->
                     Err error
@@ -158,7 +165,56 @@ tryMakeBrickModel randomBrickForm randomDirection =
             Err error
 
 
-handleScreenSize : Float -> Float -> Model -> ( Model, Cmd Msg )
+handleKeyPressed : String -> MainModel -> ( MainModel, Cmd Msg )
+handleKeyPressed key model =
+    if model.playerInput == Possible then
+        let
+            activeBrickResult =
+                isThereCurrentActiveBrick model.gameModel.currentBrickModel
+        in
+        case activeBrickResult of
+            Ok _ ->
+                let
+                    maybeCommand =
+                        case key of
+                            "a" ->
+                                Just MoveLeft
+
+                            "d" ->
+                                Just MoveRight
+
+                            "s" ->
+                                Just MoveDown
+
+                            "w" ->
+                                Just SwitchForm
+
+                            _ ->
+                                Nothing
+                in
+                case maybeCommand of
+                    Nothing ->
+                        ( model, Cmd.none )
+
+                    Just gameCommand ->
+                        let
+                            newGameModel =
+                                addGameCommandToBackOfGameModelClock gameCommand model.gameModel
+                        in
+                        ( { model | gameModel = newGameModel, playerInput = Stopped }
+                        , Process.sleep activatePlayerInPutWaitTime |> Task.perform (always ActivatePlayerInput)
+                        )
+
+            Err _ ->
+                ( { model | error = Just "Cant press keys, brick is not active" }
+                , Cmd.none
+                )
+
+    else
+        ( model, Cmd.none )
+
+
+handleScreenSize : Float -> Float -> MainModel -> ( MainModel, Cmd Msg )
 handleScreenSize width height model =
     let
         newSize =

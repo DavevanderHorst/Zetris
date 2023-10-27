@@ -1,14 +1,10 @@
 module Functions.Playfield exposing (..)
 
 import Dict exposing (Dict)
-import Functions.Base exposing (isEven)
+import Functions.BrickForm exposing (BrickForm(..))
 import Functions.Colors exposing (cellColorToString, getBrickFormColor)
-import Models exposing (BrickForm(..), BrickModel, Cell, Color(..), Direction(..), GameModel, Model)
-
-
-makePlayFieldDictKey : Int -> Int -> String
-makePlayFieldDictKey rowNumber colNumber =
-    String.fromInt rowNumber ++ "," ++ String.fromInt colNumber
+import Functions.Square exposing (createSquarePlayFieldDictKeys)
+import Models exposing (BrickModel, Cell, Color(..), GameModel, MainModel)
 
 
 getRowAndColNumberFromPlayFieldDictKey : String -> ( Int, Int )
@@ -29,36 +25,8 @@ getRowAndColNumberFromPlayFieldDictKey key =
 createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
 createPlayFieldDictKeysForBrickForm row col form =
     case form of
-        Square ->
-            createSquarePlayFieldDictKeys row col
-
-
-createSquarePlayFieldDictKeys : Int -> Int -> List String
-createSquarePlayFieldDictKeys startRowNumber startColumnNumber =
-    let
-        firstKey =
-            makePlayFieldDictKey startRowNumber startColumnNumber
-
-        upRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber
-
-            else
-                startColumnNumber - 1
-
-        upRowNumber =
-            startRowNumber - 1
-
-        secondKey =
-            makePlayFieldDictKey upRowNumber upRowColumnNumber
-
-        thirdKey =
-            makePlayFieldDictKey upRowNumber (upRowColumnNumber + 1)
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber - 2) startColumnNumber
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
+        Square formType ->
+            createSquarePlayFieldDictKeys row col formType
 
 
 setBrickInPlayField : BrickModel -> Dict String Cell -> Dict String Cell

@@ -1,8 +1,7 @@
 module PlayFieldGenerator exposing (..)
 
 import Dict exposing (Dict)
-import Functions.Base exposing (isEven)
-import Functions.Playfield exposing (makePlayFieldDictKey)
+import Functions.Base exposing (isEven, makePlayFieldDictKey)
 import Models exposing (Cell, Color(..), GameModel)
 import PlayFieldSizes exposing (evenRowColumnCells, maximumRows, unevenRowColumnCells)
 

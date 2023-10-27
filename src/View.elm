@@ -2,13 +2,14 @@ module View exposing (..)
 
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
+import Functions.BrickMoveDirection exposing (brickMoveDirectionToString)
 import Functions.Colors exposing (cellColorToString)
 import Functions.Playfield exposing (getRowAndColNumberFromPlayFieldDictKey)
 import Html exposing (Html, button, div, text)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)
-import Messages exposing (Msg(..))
-import Models exposing (BrickForm(..), BrickModel, Cell, Color(..), Direction(..), Model)
+import Messages exposing (KeyValue(..), Msg(..))
+import Models exposing (BrickModel, Cell, Color(..), MainModel)
 import PlayFieldSizes
     exposing
         ( cellSizeInPxString
@@ -20,7 +21,7 @@ import PlayFieldSizes
         )
 
 
-view : Model -> Html Msg
+view : MainModel -> Html Msg
 view model =
     div
         [ attrFloat (Attr.style "width") model.windowSize.width
@@ -36,45 +37,27 @@ view model =
             , Attr.style "background-color" "black"
             ]
             [ renderPlayField model ]
-        , let
-            brickModel =
-                Maybe.withDefault emptyBrickModel model.gameModel.currentBrickModel
-          in
-          div []
-            [ case model.error of
-                Nothing ->
-                    div [] []
+        , case model.gameModel.currentBrickModel of
+            Nothing ->
+                div [] [ text "No current brick model." ]
 
-                Just error ->
-                    div [] [ text error ]
-            , div [] [ text ("direction : " ++ directionToString brickModel.direction) ]
-            , div [] [ text ("row : " ++ String.fromInt brickModel.baseRow) ]
-            , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
-            ]
+            Just brickModel ->
+                div []
+                    [ case model.error of
+                        Nothing ->
+                            div [] []
+
+                        Just error ->
+                            div [] [ text error ]
+                    , div [] [ text ("direction : " ++ brickMoveDirectionToString brickModel.direction) ]
+                    , div [] [ text ("row : " ++ String.fromInt brickModel.baseRow) ]
+                    , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
+                    , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
+                    ]
         ]
 
 
-emptyBrickModel : BrickModel
-emptyBrickModel =
-    { form = Square
-    , direction = Left
-    , baseRow = 0
-    , baseColumn = 0
-    , playFieldDictKeys = []
-    }
-
-
-directionToString : Direction -> String
-directionToString direction =
-    case direction of
-        Left ->
-            "left"
-
-        Right ->
-            "right"
-
-
-renderPlayField : Model -> Html Msg
+renderPlayField : MainModel -> Html Msg
 renderPlayField model =
     let
         playFieldForView =
@@ -151,7 +134,7 @@ attrFloat attr value =
     attr (String.fromFloat value ++ "px")
 
 
-makeViewPlayField : Model -> Dict Int (Dict Int Cell)
+makeViewPlayField : MainModel -> Dict Int (Dict Int Cell)
 makeViewPlayField model =
     let
         fieldToUse =

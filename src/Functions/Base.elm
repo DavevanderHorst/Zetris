@@ -10,10 +10,15 @@ isEven number =
         False
 
 
-addToFrontOfList : a -> List a -> List a
-addToFrontOfList toAdd list =
+addToBackOfList : a -> List a -> List a
+addToBackOfList toAdd list =
     let
         reversedList =
             List.reverse list
     in
     List.reverse <| toAdd :: reversedList
+
+
+makePlayFieldDictKey : Int -> Int -> String
+makePlayFieldDictKey rowNumber colNumber =
+    String.fromInt rowNumber ++ "," ++ String.fromInt colNumber

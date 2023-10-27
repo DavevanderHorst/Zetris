@@ -1,9 +1,18 @@
 module Functions.Brick exposing (..)
 
 import Functions.Base exposing (isEven)
+import Functions.BrickForm exposing (BrickForm(..), FormType)
+import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.Playfield exposing (createPlayFieldDictKeysForBrickForm)
-import Models exposing (BrickForm(..), BrickModel, Color(..), Direction(..))
-import PlayFieldSizes exposing (evenRowColumnCells, maximumRows)
+import Functions.Square exposing (doesSquareBumpWallWhenDropped, switchSquareBrickForm)
+import Models exposing (BrickModel, Color(..))
+
+
+switchBrickForm : BrickModel -> BrickModel
+switchBrickForm brick =
+    case brick.form of
+        Square formType ->
+            switchSquareBrickForm formType brick
 
 
 dropBrickModel : BrickModel -> BrickModel
@@ -14,14 +23,14 @@ dropBrickModel brick =
         isEvenRowNumber =
             isEven brick.baseRow
 
-        direction =
-            changeBrickDirectionWhenBumpingWalls brick
+        updatedBrick =
+            changeBrickDirectionWhenBumpingWallsWhenDropped brick
 
-        newRowNumber =
+        droppedRowNumber =
             brick.baseRow + 1
 
-        newColumnNumber =
-            case direction of
+        droppedColumnNumber =
+            case updatedBrick.direction of
                 Left ->
                     if isEvenRowNumber then
                         brick.baseColumn
@@ -37,51 +46,79 @@ dropBrickModel brick =
                         brick.baseColumn
 
         newDictKeys =
-            createPlayFieldDictKeysForBrickForm newRowNumber newColumnNumber brick.form
+            createPlayFieldDictKeysForBrickForm droppedRowNumber droppedColumnNumber brick.form
     in
-    { brick | baseRow = newRowNumber, baseColumn = newColumnNumber, direction = direction, playFieldDictKeys = newDictKeys }
+    { updatedBrick | baseRow = droppedRowNumber, baseColumn = droppedColumnNumber, playFieldDictKeys = newDictKeys }
 
 
-isBrickModelAtBottom : BrickModel -> Bool
-isBrickModelAtBottom brick =
-    if brick.baseRow == maximumRows then
-        True
+changeBrickDirectionWhenBumpingWallsWhenDropped : BrickModel -> BrickModel
+changeBrickDirectionWhenBumpingWallsWhenDropped brick =
+    let
+        directionForDropping =
+            case brick.form of
+                Square formType ->
+                    if doesSquareBumpWallWhenDropped formType brick then
+                        switchBrickMoveDirection brick.direction
 
-    else
-        False
-
-
-changeBrickDirectionWhenBumpingWalls : BrickModel -> Direction
-changeBrickDirectionWhenBumpingWalls brick =
-    case brick.form of
-        Square ->
-            if isEven brick.baseRow then
-                if brick.direction == Left && brick.baseColumn == 1 then
-                    Right
-
-                else if brick.direction == Right && brick.baseColumn == evenRowColumnCells then
-                    Left
-
-                else
-                    brick.direction
-
-            else
-                brick.direction
+                    else
+                        brick.direction
+    in
+    { brick | direction = directionForDropping }
 
 
-isBrickAtBottom : BrickModel -> Bool
-isBrickAtBottom brick =
-    case brick.form of
-        Square ->
-            if brick.baseRow == (maximumRows - 2) then
-                True
+isThereCurrentActiveBrick : Maybe BrickModel -> Result String BrickModel
+isThereCurrentActiveBrick maybeBrick =
+    case maybeBrick of
+        Nothing ->
+            Err "?"
+
+        Just brick ->
+            if brick.isActive then
+                Ok brick
 
             else
-                False
+                Err "?"
+
+
+moveBrickModelLeft : BrickModel -> BrickModel
+moveBrickModelLeft brick =
+    moveBrickModel Left brick
+
+
+moveBrickModelRight : BrickModel -> BrickModel
+moveBrickModelRight brick =
+    moveBrickModel Right brick
+
+
+moveBrickModel : BrickMoveDirection -> BrickModel -> BrickModel
+moveBrickModel direction brick =
+    let
+        newColumnNumber =
+            case direction of
+                Left ->
+                    brick.baseColumn - 1
+
+                Right ->
+                    brick.baseColumn + 1
+
+        newDictKeys =
+            createPlayFieldDictKeysForBrickForm brick.baseRow newColumnNumber brick.form
+    in
+    { brick | baseColumn = newColumnNumber, playFieldDictKeys = newDictKeys }
+
+
+isBrickActive : Maybe BrickModel -> Bool
+isBrickActive maybeBrick =
+    case maybeBrick of
+        Nothing ->
+            False
+
+        Just brick ->
+            brick.isActive
 
 
 getStartRowNumberForBrickForm : BrickForm -> Int
 getStartRowNumberForBrickForm form =
     case form of
-        Square ->
+        Square _ ->
             3
