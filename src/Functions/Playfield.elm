@@ -3,7 +3,8 @@ module Functions.Playfield exposing (..)
 import Dict exposing (Dict)
 import Functions.BrickForm exposing (BrickForm(..))
 import Functions.Colors exposing (cellColorToString, getBrickFormColor)
-import Functions.Square exposing (createSquarePlayFieldDictKeys)
+import Functions.Shapes.LShape exposing (createLShapePlayFieldDictKeys)
+import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys)
 import Models exposing (BrickModel, Cell, Color(..), GameModel, MainModel)
 
 
@@ -27,6 +28,9 @@ createPlayFieldDictKeysForBrickForm row col form =
     case form of
         Square formType ->
             createSquarePlayFieldDictKeys row col formType
+
+        LShape formType ->
+            createLShapePlayFieldDictKeys row col formType
 
 
 setBrickInPlayField : BrickModel -> Dict String Cell -> Dict String Cell

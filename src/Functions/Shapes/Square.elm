@@ -1,8 +1,8 @@
-module Functions.Square exposing (..)
+module Functions.Shapes.Square exposing (..)
 
 import Functions.Base exposing (isEven, makePlayFieldDictKey)
-import Functions.BrickForm exposing (BrickForm(..), FormType(..), switchFormType)
-import Functions.BrickMoveDirection exposing (BrickMoveDirection(..))
+import Functions.BrickForm exposing (BrickForm(..), ThreeFormType(..), switchThreeFormType)
+import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
 import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 
@@ -19,57 +19,45 @@ import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 --                ..
 
 
-doesSquareBumpWallWhenDropped : FormType -> BrickModel -> Bool
+doesSquareBumpWallWhenDropped : ThreeFormType -> BrickModel -> Bool
 doesSquareBumpWallWhenDropped formType brick =
     case formType of
         A ->
-            if isEven brick.baseRow then
-                if brick.direction == Left && brick.baseColumn == 1 then
-                    True
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
+                True
 
-                else if brick.direction == Right && brick.baseColumn == evenRowColumnCells then
-                    True
-
-                else
-                    False
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
 
             else
                 False
 
         B ->
-            if isEven brick.baseRow then
-                if brick.direction == Left && brick.baseColumn == 1 then
-                    True
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
+                True
 
-                else
-                    False
-
-            else if brick.direction == Right && brick.baseColumn == unevenRowColumnCells then
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
                 True
 
             else
                 False
 
         C ->
-            if isEven brick.baseRow then
-                if brick.direction == Right && brick.baseColumn == evenRowColumnCells - 1 then
-                    True
+            if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
 
-                else
-                    False
-
-            else if brick.direction == Left && brick.baseColumn == 1 then
+            else if isUnEvenIsLeftAndBaseColumnIs 2 brick then
                 True
 
             else
                 False
 
 
-switchSquareBrickForm : FormType -> BrickModel -> BrickModel
+switchSquareBrickForm : ThreeFormType -> BrickModel -> BrickModel
 switchSquareBrickForm formType brick =
     let
         newFormType =
-            switchFormType formType
+            switchThreeFormType formType
 
         newBrickDictKeys =
             createSquarePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
@@ -81,7 +69,7 @@ switchSquareBrickForm formType brick =
 -- Create keys for SQUARE in play field
 
 
-createSquarePlayFieldDictKeys : Int -> Int -> FormType -> List String
+createSquarePlayFieldDictKeys : Int -> Int -> ThreeFormType -> List String
 createSquarePlayFieldDictKeys startRowNumber startColumnNumber formType =
     let
         baseKey =
@@ -127,7 +115,7 @@ createBSquarePlayFieldDictKeys : Int -> Int -> String -> List String
 createBSquarePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
     let
         secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
 
         upRowRightColumnNumber =
             if isEven startRowNumber then
@@ -143,7 +131,7 @@ createBSquarePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
             makePlayFieldDictKey upRowNumber upRowRightColumnNumber
 
         fourthKey =
-            makePlayFieldDictKey upRowNumber (upRowRightColumnNumber - 1)
+            makePlayFieldDictKey upRowNumber (upRowRightColumnNumber + 1)
     in
     [ firstKey, secondKey, thirdKey, fourthKey ]
 
@@ -152,7 +140,7 @@ createCSquarePlayFieldDictKeys : Int -> Int -> String -> List String
 createCSquarePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
     let
         secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
+            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
 
         upRowLeftColumnNumber =
             if isEven startRowNumber then
@@ -168,6 +156,6 @@ createCSquarePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
             makePlayFieldDictKey upRowNumber upRowLeftColumnNumber
 
         fourthKey =
-            makePlayFieldDictKey upRowNumber (upRowLeftColumnNumber + 1)
+            makePlayFieldDictKey upRowNumber (upRowLeftColumnNumber - 1)
     in
     [ firstKey, secondKey, thirdKey, fourthKey ]

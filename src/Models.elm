@@ -1,7 +1,7 @@
 module Models exposing (..)
 
 import Dict exposing (Dict)
-import Functions.BrickForm exposing (BrickForm, FormType)
+import Functions.BrickForm exposing (BrickForm, ThreeFormType)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection)
 
 

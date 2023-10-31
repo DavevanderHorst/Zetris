@@ -1,10 +1,11 @@
 module Functions.Brick exposing (..)
 
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..), FormType)
+import Functions.BrickForm exposing (BrickForm(..), ThreeFormType)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.Playfield exposing (createPlayFieldDictKeysForBrickForm)
-import Functions.Square exposing (doesSquareBumpWallWhenDropped, switchSquareBrickForm)
+import Functions.Shapes.LShape exposing (doesLShapeBumpWallWhenDropped, switchLShapeBrickForm)
+import Functions.Shapes.Square exposing (doesSquareBumpWallWhenDropped, switchSquareBrickForm)
 import Models exposing (BrickModel, Color(..))
 
 
@@ -13,6 +14,9 @@ switchBrickForm brick =
     case brick.form of
         Square formType ->
             switchSquareBrickForm formType brick
+
+        LShape formType ->
+            switchLShapeBrickForm formType brick
 
 
 dropBrickModel : BrickModel -> BrickModel
@@ -58,6 +62,13 @@ changeBrickDirectionWhenBumpingWallsWhenDropped brick =
             case brick.form of
                 Square formType ->
                     if doesSquareBumpWallWhenDropped formType brick then
+                        switchBrickMoveDirection brick.direction
+
+                    else
+                        brick.direction
+
+                LShape formType ->
+                    if doesLShapeBumpWallWhenDropped formType brick then
                         switchBrickMoveDirection brick.direction
 
                     else
@@ -121,4 +132,7 @@ getStartRowNumberForBrickForm : BrickForm -> Int
 getStartRowNumberForBrickForm form =
     case form of
         Square _ ->
+            3
+
+        LShape _ ->
             3

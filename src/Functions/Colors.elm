@@ -22,3 +22,6 @@ getBrickFormColor form =
     case form of
         Square _ ->
             Red
+
+        LShape _ ->
+            Orange
