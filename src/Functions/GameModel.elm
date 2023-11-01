@@ -50,7 +50,7 @@ addGameCommandToBackOfGameModelClock command gameModel =
     { gameModel | gameClock = newGameClock }
 
 
-updateGameModelForFinishedBrick : GameModel -> Result String GameModel
+updateGameModelForFinishedBrick : GameModel -> Result String ( GameModel, BrickModel )
 updateGameModelForFinishedBrick gameModel =
     case gameModel.tempPlayField of
         Nothing ->
@@ -66,7 +66,14 @@ updateGameModelForFinishedBrick gameModel =
                         newBrickModel =
                             { brickModel | isActive = False }
                     in
-                    Ok { gameModel | playField = playField, tempPlayField = Nothing, currentBrickModel = Just newBrickModel }
+                    Ok
+                        ( { gameModel
+                            | playField = playField
+                            , tempPlayField = Nothing
+                            , currentBrickModel = Just newBrickModel
+                          }
+                        , newBrickModel
+                        )
 
 
 tryTakeActiveBrickModelFromGameModel : GameModel -> Result String BrickModel

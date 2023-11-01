@@ -3,12 +3,11 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport)
 import Browser.Events
-import Functions.Brick exposing (getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
+import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
 import Functions.GameClock exposing (tickGameClock)
 import Functions.GameCommand exposing (executeGameCommand)
 import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, emptyGameClock, trySetNewBrickInGameModel)
 import Functions.MainModel exposing (setGameClockInMainModel)
-import Functions.Playfield exposing (createPlayFieldDictKeysForBrickForm)
 import Functions.Random exposing (rollRandomBrickModel, tryGetBrickForm, tryGetRandomDirection)
 import Json.Decode as Decode
 import Messages exposing (Msg(..))
@@ -184,7 +183,7 @@ handleKeyPressed key model =
                                 Just MoveRight
 
                             "s" ->
-                                Just MoveDown
+                                Just DropBrick
 
                             "w" ->
                                 Just SwitchForm

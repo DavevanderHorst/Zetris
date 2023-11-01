@@ -1,8 +1,8 @@
 module Functions.Shapes.LShape exposing (..)
 
-import Functions.Base exposing (isEven, makePlayFieldDictKey)
+import Functions.Base exposing (isEven)
 import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormType)
-import Functions.BrickMoveDirection exposing (BrickMoveDirection(..))
+import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
 import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)

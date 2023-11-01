@@ -17,7 +17,7 @@ tryGetBrickForm : Int -> Result String BrickForm
 tryGetBrickForm number =
     case number of
         _ ->
-            Ok lShapeStartForm
+            Ok squareStartForm
 
 
 

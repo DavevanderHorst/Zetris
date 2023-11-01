@@ -1,36 +1,12 @@
 module Functions.Playfield exposing (..)
 
 import Dict exposing (Dict)
-import Functions.BrickForm exposing (BrickForm(..))
+import Functions.Base exposing (isEven)
+import Functions.Brick exposing (getCurrentRowsFromBrick)
 import Functions.Colors exposing (cellColorToString, getBrickFormColor)
-import Functions.Shapes.LShape exposing (createLShapePlayFieldDictKeys)
-import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys)
+import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Models exposing (BrickModel, Cell, Color(..), GameModel, MainModel)
-
-
-getRowAndColNumberFromPlayFieldDictKey : String -> ( Int, Int )
-getRowAndColNumberFromPlayFieldDictKey key =
-    -- Cant go wrong.
-    let
-        ( rowNumberString, colNumberString ) =
-            case String.split "," key of
-                [ row, col ] ->
-                    ( row, col )
-
-                _ ->
-                    ( "", "" )
-    in
-    ( Maybe.withDefault 0 (String.toInt rowNumberString), Maybe.withDefault 0 (String.toInt colNumberString) )
-
-
-createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
-createPlayFieldDictKeysForBrickForm row col form =
-    case form of
-        Square formType ->
-            createSquarePlayFieldDictKeys row col formType
-
-        LShape formType ->
-            createLShapePlayFieldDictKeys row col formType
+import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 
 
 setBrickInPlayField : BrickModel -> Dict String Cell -> Dict String Cell
@@ -76,3 +52,71 @@ isCellEmpty dict key result =
 
     else
         result
+
+
+getFullRowsAfterSettingBrick : Dict String Cell -> BrickModel -> List Int
+getFullRowsAfterSettingBrick playField brick =
+    let
+        rowsListToCheck =
+            getCurrentRowsFromBrick brick
+    in
+    List.foldl (addRowNumberWhenFull playField) [] rowsListToCheck
+
+
+addRowNumberWhenFull : Dict String Cell -> Int -> List Int -> List Int
+addRowNumberWhenFull playField row fullRowsList =
+    let
+        rowKeys =
+            createAllKeysForRowNumber row
+
+        isRowFilled =
+            List.foldl (checkIfIsFilled playField) True rowKeys
+    in
+    if isRowFilled then
+        row :: fullRowsList
+
+    else
+        fullRowsList
+
+
+checkIfIsFilled : Dict String Cell -> String -> Bool -> Bool
+checkIfIsFilled playField key allFilled =
+    if allFilled then
+        let
+            cellResult =
+                Dict.get key playField
+        in
+        case cellResult of
+            Nothing ->
+                False
+
+            Just cell ->
+                if cell.color == White then
+                    False
+
+                else
+                    True
+
+    else
+        False
+
+
+createAllKeysForRowNumber : Int -> List String
+createAllKeysForRowNumber row =
+    let
+        max =
+            if isEven row then
+                evenRowColumnCells
+
+            else
+                unevenRowColumnCells
+
+        columnNumbers =
+            List.range 1 max
+    in
+    List.foldl (createAndAddDictKey row) [] columnNumbers
+
+
+createAndAddDictKey : Int -> Int -> List String -> List String
+createAndAddDictKey row col keys =
+    makePlayFieldDictKey row col :: keys

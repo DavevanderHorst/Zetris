@@ -3,9 +3,9 @@ module Functions.Brick exposing (..)
 import Functions.Base exposing (isEven)
 import Functions.BrickForm exposing (BrickForm(..), ThreeFormType)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
-import Functions.Playfield exposing (createPlayFieldDictKeysForBrickForm)
-import Functions.Shapes.LShape exposing (doesLShapeBumpWallWhenDropped, switchLShapeBrickForm)
-import Functions.Shapes.Square exposing (doesSquareBumpWallWhenDropped, switchSquareBrickForm)
+import Functions.PlayFieldDictKeys exposing (getRowNumberFromPlayFieldDictKey)
+import Functions.Shapes.LShape exposing (createLShapePlayFieldDictKeys, doesLShapeBumpWallWhenDropped, switchLShapeBrickForm)
+import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys, doesSquareBumpWallWhenDropped, switchSquareBrickForm)
 import Models exposing (BrickModel, Color(..))
 
 
@@ -17,6 +17,24 @@ switchBrickForm brick =
 
         LShape formType ->
             switchLShapeBrickForm formType brick
+
+
+getCurrentRowsFromBrick : BrickModel -> List Int
+getCurrentRowsFromBrick brick =
+    List.foldl addUniqueRowNumber [] brick.playFieldDictKeys
+
+
+addUniqueRowNumber : String -> List Int -> List Int
+addUniqueRowNumber key rowList =
+    let
+        rowNumber =
+            getRowNumberFromPlayFieldDictKey key
+    in
+    if List.member rowNumber rowList then
+        rowList
+
+    else
+        rowNumber :: rowList
 
 
 dropBrickModel : BrickModel -> BrickModel
@@ -136,3 +154,13 @@ getStartRowNumberForBrickForm form =
 
         LShape _ ->
             3
+
+
+createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
+createPlayFieldDictKeysForBrickForm row col form =
+    case form of
+        Square formType ->
+            createSquarePlayFieldDictKeys row col formType
+
+        LShape formType ->
+            createLShapePlayFieldDictKeys row col formType

@@ -41,7 +41,6 @@ type GameCommand
     = DropBrick
     | MoveLeft
     | MoveRight
-    | MoveDown
     | SwitchForm
 
 

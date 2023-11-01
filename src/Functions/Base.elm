@@ -17,8 +17,3 @@ addToBackOfList toAdd list =
             List.reverse list
     in
     List.reverse <| toAdd :: reversedList
-
-
-makePlayFieldDictKey : Int -> Int -> String
-makePlayFieldDictKey rowNumber colNumber =
-    String.fromInt rowNumber ++ "," ++ String.fromInt colNumber

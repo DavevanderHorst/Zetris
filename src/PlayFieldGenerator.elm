@@ -1,9 +1,10 @@
 module PlayFieldGenerator exposing (..)
 
 import Dict exposing (Dict)
-import Functions.Base exposing (isEven, makePlayFieldDictKey)
+import Functions.Base exposing (isEven)
+import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Models exposing (Cell, Color(..), GameModel)
-import PlayFieldSizes exposing (evenRowColumnCells, maximumRows, unevenRowColumnCells)
+import PlayFieldSizes exposing (evenRowColumnCells, maximumRows, middleColumnCellNumber, unevenRowColumnCells)
 
 
 initGameModel : GameModel
@@ -38,5 +39,16 @@ generatePlayFieldRow rowNumber colNumber dict =
     let
         key =
             makePlayFieldDictKey rowNumber colNumber
+
+        color =
+            if rowNumber == maximumRows then
+                if colNumber == middleColumnCellNumber then
+                    White
+
+                else
+                    Red
+
+            else
+                White
     in
-    Dict.insert key (Cell White) dict
+    Dict.insert key (Cell color) dict

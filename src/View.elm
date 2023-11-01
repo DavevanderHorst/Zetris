@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
 import Functions.BrickMoveDirection exposing (brickMoveDirectionToString)
 import Functions.Colors exposing (cellColorToString)
-import Functions.Playfield exposing (getRowAndColNumberFromPlayFieldDictKey)
+import Functions.PlayFieldDictKeys exposing (getRowAndColNumberFromPlayFieldDictKey)
 import Html exposing (Html, button, div, text)
 import Html.Attributes as Attr
 import Html.Events exposing (onClick)

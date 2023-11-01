@@ -1,7 +1,8 @@
 module Functions.Shapes.Square exposing (..)
 
-import Functions.Base exposing (isEven, makePlayFieldDictKey)
+import Functions.Base exposing (isEven)
 import Functions.BrickForm exposing (BrickForm(..), ThreeFormType(..), switchThreeFormType)
+import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
 import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)

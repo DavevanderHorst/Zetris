@@ -2,6 +2,7 @@ module Functions.GameCommand exposing (..)
 
 import Functions.Brick exposing (dropBrickModel, moveBrickModelLeft, moveBrickModelRight, switchBrickForm)
 import Functions.GameModel exposing (trySetNewBrickInGameModel, tryTakeActiveBrickModelFromGameModel, updateGameModelForFinishedBrick)
+import Functions.Playfield exposing (getFullRowsAfterSettingBrick)
 import Messages exposing (Msg(..))
 import Models exposing (GameCommand(..), GameModel, MainModel)
 
@@ -34,8 +35,16 @@ executeGameCommand command model nextTickCmd =
                                 Err error ->
                                     ( { model | error = Just (error ++ ", " ++ err) }, nextTickCmd )
 
-                                Ok newGameModel ->
-                                    ( { model | gameModel = newGameModel, error = Just err }, Cmd.batch [ nextTickCmd ] )
+                                Ok ( newGameModel, updatedBrickModel ) ->
+                                    let
+                                        fullRowsList =
+                                            getFullRowsAfterSettingBrick newGameModel.playField updatedBrickModel
+                                    in
+                                    if List.isEmpty fullRowsList then
+                                        ( { model | gameModel = newGameModel, error = Just err }, Cmd.batch [ nextTickCmd ] )
+
+                                    else
+                                        ( { model | gameModel = newGameModel, error = Just ("Found full rows!!!!, " ++ err) }, nextTickCmd )
 
                         Ok newGameModel ->
                             -- brick dropped
@@ -69,29 +78,6 @@ executeGameCommand command model nextTickCmd =
 
                         Ok newGameModel ->
                             -- brick moved right
-                            ( { model | gameModel = newGameModel }, nextTickCmd )
-
-                MoveDown ->
-                    let
-                        nextBrickModel =
-                            dropBrickModel brickModel
-                    in
-                    case trySetNewBrickInGameModel model.gameModel nextBrickModel of
-                        Err setError ->
-                            -- brick hitting other bricks/bottom, so its finished. By player hand
-                            let
-                                newGameModelResult =
-                                    updateGameModelForFinishedBrick model.gameModel
-                            in
-                            case newGameModelResult of
-                                Err error ->
-                                    ( { model | error = Just (error ++ ", " ++ setError) }, nextTickCmd )
-
-                                Ok newGameModel ->
-                                    ( { model | gameModel = newGameModel, error = Just setError }, nextTickCmd )
-
-                        Ok newGameModel ->
-                            -- brick moved down
                             ( { model | gameModel = newGameModel }, nextTickCmd )
 
                 SwitchForm ->
