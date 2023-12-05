@@ -6,7 +6,46 @@ import Functions.Brick exposing (getCurrentRowsFromBrick)
 import Functions.Colors exposing (cellColorToString, getBrickFormColor)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Models exposing (BrickModel, Cell, Color(..), GameModel, MainModel)
-import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
+import PlayFieldSizes exposing (evenRowColumnCells, middleColumnCellNumber, unevenRowColumnCells)
+
+
+getCellFromPlayField : String -> Dict String Cell -> Maybe Cell
+getCellFromPlayField key playField =
+    Dict.get key playField
+
+
+makeRowWhiteInPlayField : Int -> Dict String Cell -> Dict String Cell
+makeRowWhiteInPlayField rowNumber playField =
+    let
+        rowKeys =
+            generateRowKeys rowNumber
+    in
+    List.foldl (setCellInPlayField White) playField rowKeys
+
+
+generateRowKeys : Int -> List String
+generateRowKeys rowNumber =
+    let
+        max =
+            if isEven rowNumber then
+                evenRowColumnCells
+
+            else
+                unevenRowColumnCells
+
+        colNumbers =
+            List.range 1 max
+    in
+    List.foldl (generateRowKey rowNumber) [] colNumbers
+
+
+generateRowKey : Int -> Int -> List String -> List String
+generateRowKey row col keys =
+    let
+        key =
+            makePlayFieldDictKey row col
+    in
+    key :: keys
 
 
 setBrickInPlayField : BrickModel -> Dict String Cell -> Dict String Cell
@@ -120,3 +159,200 @@ createAllKeysForRowNumber row =
 createAndAddDictKey : Int -> Int -> List String -> List String
 createAndAddDictKey row col keys =
     makePlayFieldDictKey row col :: keys
+
+
+dropRowNumberInPlayField : Int -> Int -> Dict String Cell -> Result String (Dict String Cell)
+dropRowNumberInPlayField rowNumber numberOfRowsToDrop playField =
+    let
+        ( maxColumnNumber, isEvenRowNumber ) =
+            if isEven rowNumber then
+                ( evenRowColumnCells, True )
+
+            else
+                ( unevenRowColumnCells, False )
+    in
+    if isEven numberOfRowsToDrop then
+        -- row keeps same size, so easiest drop.
+        let
+            columnNumberList =
+                List.range 1 maxColumnNumber
+        in
+        dropColumnNumbersInPlayFieldNormalFunc rowNumber numberOfRowsToDrop columnNumberList playField
+
+    else
+        -- the first half of the list always stays same number, so we can drop those already.
+        let
+            firstHalfColumnNumberList =
+                List.range 1 (middleColumnCellNumber - 1)
+
+            firstHalfPlayFieldResult =
+                dropColumnNumbersInPlayFieldNormalFunc rowNumber numberOfRowsToDrop firstHalfColumnNumberList playField
+        in
+        case firstHalfPlayFieldResult of
+            Err err ->
+                Err err
+
+            Ok firstHalfPlayField ->
+                -- need to check if we go from even to uneven or even to uneven
+                if isEvenRowNumber then
+                    -- we go from even to uneven, so second half needs + 1
+                    -- column 8 always goes right
+                    -- next uneven row middle cell, we need to set to white
+                    let
+                        secondHalfColumnNumberList =
+                            List.range middleColumnCellNumber evenRowColumnCells
+
+                        secondHalfPlayFieldResult =
+                            dropColumnNumbersInPlayFieldOneHigherFunc rowNumber numberOfRowsToDrop secondHalfColumnNumberList firstHalfPlayField
+                    in
+                    case secondHalfPlayFieldResult of
+                        Err err ->
+                            Err err
+
+                        Ok secondHalfPlayField ->
+                            let
+                                keyToClear =
+                                    makePlayFieldDictKey (rowNumber + numberOfRowsToDrop) 8
+                            in
+                            Ok (setCellInPlayField White keyToClear secondHalfPlayField)
+
+                else
+                    -- we go from uneven to even, so second half needs - 1
+                    -- column 8 we do after
+                    let
+                        secondHalfColumnNumberList =
+                            List.range (middleColumnCellNumber + 1) unevenRowColumnCells
+
+                        secondHalfPlayFieldResult =
+                            dropColumnNumbersInPlayFieldOneLowerFunc rowNumber numberOfRowsToDrop secondHalfColumnNumberList firstHalfPlayField
+                    in
+                    case secondHalfPlayFieldResult of
+                        Err err ->
+                            Err err
+
+                        Ok secondHalfPlayField ->
+                            dropColumnEightForUnevenToEvenRowDrop rowNumber numberOfRowsToDrop secondHalfPlayField
+
+
+dropColumnEightForUnevenToEvenRowDrop : Int -> Int -> Dict String Cell -> Result String (Dict String Cell)
+dropColumnEightForUnevenToEvenRowDrop rowNumber numberOfRowsToDrop playField =
+    let
+        currentKey =
+            makePlayFieldDictKey rowNumber 8
+
+        currentCellResult =
+            getCellFromPlayField currentKey playField
+    in
+    case currentCellResult of
+        Nothing ->
+            Err ("No cell found for column eight : " ++ currentKey)
+
+        Just currentCell ->
+            if currentCell.color == White then
+                Ok playField
+
+            else
+                setColumnEightRecursive (rowNumber + numberOfRowsToDrop) 8 0 Up currentCell.color playField
+
+
+setColumnEightRecursive : Int -> Int -> Int -> ColumnEightDropDirection -> Color -> Dict String Cell -> Result String (Dict String Cell)
+setColumnEightRecursive rowNumber colNumber shift shiftDirection color playField =
+    let
+        nextShift =
+            shift + 1
+
+        ( nextColNumber, nextShiftDirection ) =
+            case shiftDirection of
+                Up ->
+                    ( colNumber + shift, Down )
+
+                Down ->
+                    ( colNumber - shift, Up )
+
+        nextKey =
+            makePlayFieldDictKey rowNumber nextColNumber
+
+        currentCellResult =
+            getCellFromPlayField nextKey playField
+    in
+    case currentCellResult of
+        Just cell ->
+            if cell.color == White then
+                Ok (setCellInPlayField color nextKey playField)
+
+            else
+                setColumnEightRecursive rowNumber nextColNumber nextShift nextShiftDirection color playField
+
+        Nothing ->
+            Err ("Cant set column eight, didnt find a cell for " ++ nextKey)
+
+
+dropColumnNumbersInPlayFieldNormalFunc : Int -> Int -> List Int -> Dict String Cell -> Result String (Dict String Cell)
+dropColumnNumbersInPlayFieldNormalFunc rowNumber numberOfRowsToDrop columnNumbers playField =
+    dropColumnNumbersInPlayFieldFunc rowNumber numberOfRowsToDrop columnNumbers Normal playField
+
+
+dropColumnNumbersInPlayFieldOneHigherFunc : Int -> Int -> List Int -> Dict String Cell -> Result String (Dict String Cell)
+dropColumnNumbersInPlayFieldOneHigherFunc rowNumber numberOfRowsToDrop columnNumbers playField =
+    dropColumnNumbersInPlayFieldFunc rowNumber numberOfRowsToDrop columnNumbers OneHigher playField
+
+
+dropColumnNumbersInPlayFieldOneLowerFunc : Int -> Int -> List Int -> Dict String Cell -> Result String (Dict String Cell)
+dropColumnNumbersInPlayFieldOneLowerFunc rowNumber numberOfRowsToDrop columnNumbers playField =
+    dropColumnNumbersInPlayFieldFunc rowNumber numberOfRowsToDrop columnNumbers OneLower playField
+
+
+dropColumnNumbersInPlayFieldFunc : Int -> Int -> List Int -> ColumnDrop -> Dict String Cell -> Result String (Dict String Cell)
+dropColumnNumbersInPlayFieldFunc rowNumber numberOfRowsToDrop columnNumbers dropType playField =
+    List.foldl (dropColumnNumberInPlayField rowNumber numberOfRowsToDrop dropType) (Ok playField) columnNumbers
+
+
+dropColumnNumberInPlayField : Int -> Int -> ColumnDrop -> Int -> Result String (Dict String Cell) -> Result String (Dict String Cell)
+dropColumnNumberInPlayField rowNumber numberOfRowsToDrop dropType columnNumber playFieldResult =
+    case playFieldResult of
+        Err err ->
+            Err err
+
+        Ok playField ->
+            let
+                currentKey =
+                    makePlayFieldDictKey rowNumber columnNumber
+
+                currentCellResult =
+                    getCellFromPlayField currentKey playField
+            in
+            case currentCellResult of
+                Nothing ->
+                    Err ("No cell found for key : " ++ currentKey)
+
+                Just currentCell ->
+                    let
+                        newRowNumber =
+                            rowNumber + numberOfRowsToDrop
+
+                        newColumnNumber =
+                            case dropType of
+                                Normal ->
+                                    columnNumber
+
+                                OneHigher ->
+                                    columnNumber + 1
+
+                                OneLower ->
+                                    columnNumber - 1
+
+                        newKey =
+                            makePlayFieldDictKey newRowNumber newColumnNumber
+                    in
+                    Ok (setCellInPlayField currentCell.color newKey playField)
+
+
+type ColumnDrop
+    = Normal
+    | OneHigher
+    | OneLower
+
+
+type ColumnEightDropDirection
+    = Up
+    | Down

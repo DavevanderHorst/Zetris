@@ -10,8 +10,10 @@ type Msg
     | StartClock
     | Tick
     | NewBrick ( Int, Int )
+    | MakeNewBrick
     | DropCurrentBrick
     | ActivatePlayerInput
+    | FullRowAnimation Int (List Int)
 
 
 type KeyValue

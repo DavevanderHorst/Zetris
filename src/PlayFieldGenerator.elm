@@ -48,6 +48,21 @@ generatePlayFieldRow rowNumber colNumber dict =
                 else
                     Red
 
+            else if rowNumber == maximumRows - 1 && colNumber < 5 then
+                Red
+
+            else if rowNumber == maximumRows - 2 && colNumber < 5 then
+                Red
+
+            else if rowNumber == maximumRows - 3 && colNumber < 5 then
+                Red
+
+            else if rowNumber == maximumRows - 4 && colNumber > 10 then
+                Red
+
+            else if rowNumber == 1 && colNumber > 10 then
+                Red
+
             else
                 White
     in

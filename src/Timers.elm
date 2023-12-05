@@ -12,6 +12,16 @@ brickDropTime =
     1000
 
 
+newBrickWaitTime : Float
+newBrickWaitTime =
+    1500
+
+
+rowBlinkTime : Float
+rowBlinkTime =
+    200
+
+
 startBrickDropTime : Float
 startBrickDropTime =
     -- 2 second

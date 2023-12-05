@@ -3,21 +3,22 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport)
 import Browser.Events
+import Functions.Base exposing (isEven)
 import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
+import Functions.Commands exposing (fallingBrickCommand, newBrickCommand, nextFullRowsCommand, nextTickCmd)
 import Functions.GameClock exposing (tickGameClock)
 import Functions.GameCommand exposing (executeGameCommand)
-import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, emptyGameClock, trySetNewBrickInGameModel)
+import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, emptyGameClock, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModel, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
 import Functions.MainModel exposing (setGameClockInMainModel)
-import Functions.Random exposing (rollRandomBrickModel, tryGetBrickForm, tryGetRandomDirection)
+import Functions.Random exposing (tryGetBrickForm, tryGetRandomDirection)
 import Json.Decode as Decode
 import Messages exposing (Msg(..))
 import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, startSize)
 import PlayFieldGenerator exposing (initGameModel)
 import PlayFieldSizes exposing (middleColumnCellNumber)
 import Process
-import Random
 import Task
-import Timers exposing (activatePlayerInPutWaitTime, brickDropTime, gameClockWaitTime)
+import Timers exposing (activatePlayerInPutWaitTime, newBrickWaitTime)
 import View exposing (view)
 
 
@@ -63,7 +64,7 @@ update msg model =
         StartGame ->
             ( model
             , Cmd.batch
-                [ Random.generate NewBrick rollRandomBrickModel
+                [ newBrickCommand
                 , Task.perform (\_ -> StartClock) (Task.succeed True)
                 ]
             )
@@ -78,9 +79,6 @@ update msg model =
             let
                 ( nextMaybeGameCommand, newGameClock ) =
                     tickGameClock model.gameModel.gameClock
-
-                nextTickCmd =
-                    Process.sleep gameClockWaitTime |> Task.perform (always Tick)
             in
             case nextMaybeGameCommand of
                 Nothing ->
@@ -91,7 +89,14 @@ update msg model =
                         newModel =
                             setGameClockInMainModel newGameClock model
                     in
-                    executeGameCommand nextCommand newModel nextTickCmd
+                    executeGameCommand nextCommand newModel
+
+        MakeNewBrick ->
+            if isBrickActive model.gameModel.currentBrickModel then
+                ( { model | error = Just "Cant make a new Brick, there is still an active brick" }, Cmd.none )
+
+            else
+                ( model, newBrickCommand )
 
         NewBrick ( randomBrick, randomDirection ) ->
             case tryMakeBrickModel randomBrick randomDirection of
@@ -106,9 +111,6 @@ update msg model =
                             let
                                 finishedGameModel =
                                     emptyGameClock newGameModel
-
-                                fallingBrickCommand =
-                                    Process.sleep brickDropTime |> Task.perform (always DropCurrentBrick)
                             in
                             ( { model | gameModel = finishedGameModel, playerInput = Possible }, fallingBrickCommand )
 
@@ -124,12 +126,49 @@ update msg model =
                     newGameModel =
                         addGameCommandToFrontOfGameModelClock DropBrick model.gameModel
                 in
+                ( { model | gameModel = newGameModel }, fallingBrickCommand )
+
+            else
+                ( { model | error = Just "No active brick" }, Cmd.none )
+
+        FullRowAnimation blinks fullRowNumbers ->
+            if blinks == 0 then
+                -- TODO remove rows, drop others, then start new brick, and start clock again.
+                let
+                    newGameModelResult =
+                        removeRowsFromGameModel fullRowNumbers model.gameModel
+                in
+                case newGameModelResult of
+                    Err err ->
+                        ( { model | error = Just err }, Cmd.none )
+
+                    Ok newGameModel ->
+                        let
+                            readyGameModel =
+                                removeTempPlayFieldFromGameModel newGameModel
+                        in
+                        ( { model | gameModel = readyGameModel }
+                        , Cmd.batch
+                            [ nextTickCmd
+                            , Task.perform (\_ -> MakeNewBrick) (Task.succeed True)
+                            ]
+                        )
+
+            else if isEven blinks then
+                let
+                    newGameModel =
+                        makeRowsWhiteInTempPlayFieldForGameModel fullRowNumbers model.gameModel
+                in
                 ( { model | gameModel = newGameModel }
-                , Process.sleep brickDropTime |> Task.perform (always DropCurrentBrick)
+                , nextFullRowsCommand blinks fullRowNumbers
                 )
 
             else
-                ( model, Random.generate NewBrick rollRandomBrickModel )
+                let
+                    newGameModel =
+                        removeTempPlayFieldFromGameModel model.gameModel
+                in
+                ( { model | gameModel = newGameModel }, nextFullRowsCommand blinks fullRowNumbers )
 
 
 tryMakeBrickModel : Int -> Int -> Result String BrickModel

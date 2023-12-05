@@ -1,14 +1,18 @@
 module Functions.GameCommand exposing (..)
 
 import Functions.Brick exposing (dropBrickModel, moveBrickModelLeft, moveBrickModelRight, switchBrickForm)
+import Functions.Commands exposing (nextTickCmd)
 import Functions.GameModel exposing (trySetNewBrickInGameModel, tryTakeActiveBrickModelFromGameModel, updateGameModelForFinishedBrick)
 import Functions.Playfield exposing (getFullRowsAfterSettingBrick)
 import Messages exposing (Msg(..))
 import Models exposing (GameCommand(..), GameModel, MainModel)
+import Process
+import Task
+import Timers exposing (newBrickWaitTime)
 
 
-executeGameCommand : GameCommand -> MainModel -> Cmd Msg -> ( MainModel, Cmd Msg )
-executeGameCommand command model nextTickCmd =
+executeGameCommand : GameCommand -> MainModel -> ( MainModel, Cmd Msg )
+executeGameCommand command model =
     let
         takeActiveBrickResult =
             tryTakeActiveBrickModelFromGameModel model.gameModel
@@ -41,10 +45,16 @@ executeGameCommand command model nextTickCmd =
                                             getFullRowsAfterSettingBrick newGameModel.playField updatedBrickModel
                                     in
                                     if List.isEmpty fullRowsList then
-                                        ( { model | gameModel = newGameModel, error = Just err }, Cmd.batch [ nextTickCmd ] )
+                                        ( { model | gameModel = newGameModel, error = Just err }
+                                        , Cmd.batch
+                                            [ nextTickCmd
+                                            , Process.sleep newBrickWaitTime |> Task.perform (always MakeNewBrick)
+                                            ]
+                                        )
 
                                     else
-                                        ( { model | gameModel = newGameModel, error = Just ("Found full rows!!!!, " ++ err) }, nextTickCmd )
+                                        -- full rows, we start full row animation
+                                        ( { model | gameModel = newGameModel }, Task.perform (\_ -> FullRowAnimation 6 fullRowsList) (Task.succeed True) )
 
                         Ok newGameModel ->
                             -- brick dropped

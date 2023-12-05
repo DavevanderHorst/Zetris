@@ -1,7 +1,7 @@
 module Functions.GameModel exposing (..)
 
 import Functions.GameClock exposing (addCommandToBackOfGameClock, addCommandToFrontOfGameClock)
-import Functions.Playfield exposing (canBrickBePlacedInPlayField, setBrickInPlayField)
+import Functions.Playfield exposing (canBrickBePlacedInPlayField, dropRowNumberInPlayField, makeRowWhiteInPlayField, setBrickInPlayField)
 import Models exposing (BrickModel, Cell, GameCommand, GameModel)
 
 
@@ -88,3 +88,74 @@ tryTakeActiveBrickModelFromGameModel gameModel =
 
             else
                 Ok brickModel
+
+
+removeTempPlayFieldFromGameModel : GameModel -> GameModel
+removeTempPlayFieldFromGameModel gameModel =
+    { gameModel | tempPlayField = Nothing }
+
+
+makeRowsWhiteInTempPlayFieldForGameModel : List Int -> GameModel -> GameModel
+makeRowsWhiteInTempPlayFieldForGameModel rowNumbers gameModel =
+    let
+        newTempPlayField =
+            List.foldl makeRowWhiteInPlayField gameModel.playField rowNumbers
+    in
+    { gameModel | tempPlayField = Just newTempPlayField }
+
+
+makeRowsWhiteInPlayFieldForGameModel : List Int -> GameModel -> GameModel
+makeRowsWhiteInPlayFieldForGameModel rowNumbers gameModel =
+    let
+        newPlayField =
+            List.foldl makeRowWhiteInPlayField gameModel.playField rowNumbers
+    in
+    { gameModel | playField = newPlayField }
+
+
+removeRowsFromGameModel : List Int -> GameModel -> Result String GameModel
+removeRowsFromGameModel rows gameModel =
+    if List.isEmpty rows then
+        Err "No rows to remove from game model"
+
+    else
+        let
+            numberOfRows =
+                List.length rows
+
+            startRowNumber =
+                Maybe.withDefault 0 (List.minimum rows) - 1
+        in
+        let
+            dropRowResult =
+                dropRowFromGameModelRecursive startRowNumber numberOfRows (Ok gameModel)
+        in
+        case dropRowResult of
+            Err err ->
+                Err err
+
+            Ok newGameModel ->
+                Ok (makeRowsWhiteInPlayFieldForGameModel (List.range 1 numberOfRows) newGameModel)
+
+
+dropRowFromGameModelRecursive : Int -> Int -> Result String GameModel -> Result String GameModel
+dropRowFromGameModelRecursive rowNumber rowsToDrop gameModelResult =
+    if rowNumber == 0 then
+        gameModelResult
+
+    else
+        case gameModelResult of
+            Err err ->
+                Err err
+
+            Ok gameModel ->
+                let
+                    newPlayFieldResult =
+                        dropRowNumberInPlayField rowNumber rowsToDrop gameModel.playField
+                in
+                case newPlayFieldResult of
+                    Err err ->
+                        Err err
+
+                    Ok newPlayField ->
+                        dropRowFromGameModelRecursive (rowNumber - 1) rowsToDrop (Ok { gameModel | playField = newPlayField })
