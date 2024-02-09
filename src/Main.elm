@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Dom exposing (Viewport)
-import Browser.Events
+import Browser.Events exposing (onResize)
 import Functions.Base exposing (isEven)
 import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
 import Functions.Commands exposing (fallingBrickCommand, newBrickCommand, nextFullRowsCommand, nextTickCmd)
@@ -18,8 +18,8 @@ import PlayFieldGenerator exposing (initGameModel)
 import PlayFieldSizes exposing (middleColumnCellNumber)
 import Process
 import Task
-import Timers exposing (activatePlayerInPutWaitTime, newBrickWaitTime)
-import View exposing (view)
+import Timers exposing (activatePlayerInPutWaitTime)
+import Views.MainView exposing (mainView)
 
 
 main =
@@ -27,13 +27,16 @@ main =
         { init = init
         , update = update
         , subscriptions = subscriptions
-        , view = view
+        , view = mainView
         }
 
 
 subscriptions : MainModel -> Sub Msg
 subscriptions _ =
-    Browser.Events.onKeyDown keyDecoder
+    Sub.batch
+        [ Browser.Events.onKeyDown keyDecoder
+        , onResize (\w h -> GotNewSize w h)
+        ]
 
 
 keyDecoder : Decode.Decoder Msg
@@ -57,6 +60,9 @@ update msg model =
     case msg of
         GotViewport viewPort ->
             handleScreenSize viewPort.viewport.width viewPort.viewport.height model
+
+        GotNewSize width height ->
+            handleScreenSize (toFloat width) (toFloat height) model
 
         KeyPressed key ->
             handleKeyPressed key model

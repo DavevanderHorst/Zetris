@@ -6,7 +6,6 @@ import Functions.BrickMoveDirection exposing (BrickMoveDirection)
 
 
 type alias MainModel =
-    -- Main model
     { windowSize : Size
     , error : Maybe String
     , gameModel : GameModel

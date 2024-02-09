@@ -75,8 +75,8 @@ halfCellWidthInPxString =
     String.fromInt (cellSize // 2) ++ "px"
 
 
-playFieldWidthInPxString : String
-playFieldWidthInPxString =
+playFieldWidth : Int
+playFieldWidth =
     --background padding + cell padding + cell width
     let
         totalCellWidth =
@@ -88,11 +88,11 @@ playFieldWidthInPxString =
         cellPadding =
             (unevenRowColumnCells - 1) * cellLeftPaddingInPx
     in
-    String.fromInt (totalCellWidth + fieldPadding + cellPadding) ++ "px"
+    totalCellWidth + fieldPadding + cellPadding
 
 
-playFieldHeightInPxString : String
-playFieldHeightInPxString =
+playFieldHeight : Int
+playFieldHeight =
     --background padding + cell padding + 3/4 cell width
     let
         totalCellHeight =
@@ -104,4 +104,4 @@ playFieldHeightInPxString =
         cellPadding =
             (maximumRows - 1) * cellLeftPaddingInPx
     in
-    String.fromInt (totalCellHeight + fieldPadding + cellPadding) ++ "px"
+    totalCellHeight + fieldPadding + cellPadding

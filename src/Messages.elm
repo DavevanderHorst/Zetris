@@ -5,6 +5,7 @@ import Browser.Dom exposing (Viewport)
 
 type Msg
     = GotViewport Viewport
+    | GotNewSize Int Int
     | KeyPressed String
     | StartGame
     | StartClock
@@ -14,8 +15,3 @@ type Msg
     | DropCurrentBrick
     | ActivatePlayerInput
     | FullRowAnimation Int (List Int)
-
-
-type KeyValue
-    = Character Char
-    | Control String
