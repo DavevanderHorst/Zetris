@@ -1,12 +1,12 @@
 module Functions.Playfield exposing (..)
 
+import Constants.PlayFieldSizes exposing (evenRowColumnCells, middleColumnCellNumber, unevenRowColumnCells)
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
 import Functions.Brick exposing (getCurrentRowsFromBrick)
 import Functions.Colors exposing (cellColorToString, getBrickFormColor)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Models exposing (BrickModel, Cell, Color(..), GameModel, MainModel)
-import PlayFieldSizes exposing (evenRowColumnCells, middleColumnCellNumber, unevenRowColumnCells)
 
 
 getCellFromPlayField : String -> Dict String Cell -> Maybe Cell
@@ -14,13 +14,13 @@ getCellFromPlayField key playField =
     Dict.get key playField
 
 
-makeRowWhiteInPlayField : Int -> Dict String Cell -> Dict String Cell
-makeRowWhiteInPlayField rowNumber playField =
+changeRowColorInPlayField : Color -> Int -> Dict String Cell -> Dict String Cell
+changeRowColorInPlayField color rowNumber playField =
     let
         rowKeys =
             generateRowKeys rowNumber
     in
-    List.foldl (setCellInPlayField White) playField rowKeys
+    List.foldl (setCellInPlayField color) playField rowKeys
 
 
 generateRowKeys : Int -> List String
@@ -91,6 +91,19 @@ isCellEmpty dict key result =
 
     else
         result
+
+
+checkForZetris : Dict String Cell -> List Int -> List Int
+checkForZetris playField removedRows =
+    -- removedRows will never be empty
+    let
+        maxRow =
+            Maybe.withDefault 0 (List.maximum removedRows)
+
+        rowsListToCheck =
+            List.range 1 maxRow
+    in
+    List.foldl (addRowNumberWhenFull playField) [] rowsListToCheck
 
 
 getFullRowsAfterSettingBrick : Dict String Cell -> BrickModel -> List Int

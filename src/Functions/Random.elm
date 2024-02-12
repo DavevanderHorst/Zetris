@@ -1,6 +1,6 @@
 module Functions.Random exposing (..)
 
-import Functions.BrickForm exposing (BrickForm, lShapeStartForm, squareStartForm, totalBrickTypes)
+import Functions.BrickForm exposing (BrickForm, lShapeStartForm, sShapeStartForm, squareStartForm, straightStartForm, totalBrickTypes, zShapeStartForm)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..))
 import Random
 
@@ -16,19 +16,23 @@ rollRandomBrickModel =
 tryGetBrickForm : Int -> Result String BrickForm
 tryGetBrickForm number =
     case number of
-        _ ->
+        1 ->
             Ok squareStartForm
 
+        2 ->
+            Ok lShapeStartForm
 
+        3 ->
+            Ok straightStartForm
 
---1 ->
---    Ok squareStartForm
---
---2 ->
---    Ok lShapeStartForm
---
---_ ->
---    Err ("Wrong number for brick form : " ++ String.fromInt number)
+        4 ->
+            Ok sShapeStartForm
+
+        5 ->
+            Ok zShapeStartForm
+
+        _ ->
+            Err ("Wrong number for brick form : " ++ String.fromInt number)
 
 
 tryGetRandomDirection : Int -> Result String BrickMoveDirection

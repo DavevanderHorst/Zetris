@@ -10,11 +10,59 @@ cellColorToString color =
         White ->
             "white"
 
-        Red ->
-            "red"
+        Violet ->
+            "violet"
+
+        Indigo ->
+            "indigo"
+
+        Blue ->
+            "blue"
+
+        Green ->
+            "green"
+
+        Yellow ->
+            "yellow"
 
         Orange ->
             "orange"
+
+        Red ->
+            "red"
+
+
+zetrisAnimationStartColor : Color
+zetrisAnimationStartColor =
+    White
+
+
+getNextZetrisAnimationColor : Color -> Color
+getNextZetrisAnimationColor color =
+    case color of
+        White ->
+            Violet
+
+        Violet ->
+            Indigo
+
+        Indigo ->
+            Blue
+
+        Blue ->
+            Green
+
+        Green ->
+            Yellow
+
+        Yellow ->
+            Orange
+
+        Orange ->
+            Red
+
+        Red ->
+            White
 
 
 getBrickFormColor : BrickForm -> Color
@@ -25,3 +73,12 @@ getBrickFormColor form =
 
         LShape _ ->
             Orange
+
+        Straight _ ->
+            Blue
+
+        SShape _ ->
+            Yellow
+
+        ZShape _ ->
+            Green

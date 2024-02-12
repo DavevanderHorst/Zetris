@@ -3,22 +3,24 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport)
 import Browser.Events exposing (onResize)
+import Constants.PlayFieldSizes exposing (middleColumnCellNumber)
+import Constants.Timers exposing (activatePlayerInPutWaitTime, zetrisRowBlinks)
 import Functions.Base exposing (isEven)
 import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
-import Functions.Commands exposing (fallingBrickCommand, newBrickCommand, nextFullRowsCommand, nextTickCmd)
+import Functions.Colors exposing (zetrisAnimationStartColor)
+import Functions.Commands exposing (fallingBrickCommand, makeNextFullRowsCommand, makeNextZetrisCommand, newBrickCommand, nextTickCmd)
 import Functions.GameClock exposing (tickGameClock)
 import Functions.GameCommand exposing (executeGameCommand)
-import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, emptyGameClock, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModel, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
+import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, changeRowColorInTempPlayFieldForGameModel, emptyGameClock, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModelAndAdjustScore, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
 import Functions.MainModel exposing (setGameClockInMainModel)
+import Functions.Playfield exposing (checkForZetris)
 import Functions.Random exposing (tryGetBrickForm, tryGetRandomDirection)
 import Json.Decode as Decode
 import Messages exposing (Msg(..))
 import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, startSize)
 import PlayFieldGenerator exposing (initGameModel)
-import PlayFieldSizes exposing (middleColumnCellNumber)
 import Process
 import Task
-import Timers exposing (activatePlayerInPutWaitTime)
 import Views.MainView exposing (mainView)
 
 
@@ -137,18 +139,19 @@ update msg model =
             else
                 ( { model | error = Just "No active brick" }, Cmd.none )
 
-        FullRowAnimation blinks fullRowNumbers ->
+        ZetrisAnimation color blinks fullRowNumbers ->
             if blinks == 0 then
-                -- TODO remove rows, drop others, then start new brick, and start clock again.
+                -- animation is finished, now we remove the lines
                 let
                     newGameModelResult =
-                        removeRowsFromGameModel fullRowNumbers model.gameModel
+                        removeRowsFromGameModelAndAdjustScore True fullRowNumbers model.gameModel
                 in
                 case newGameModelResult of
                     Err err ->
                         ( { model | error = Just err }, Cmd.none )
 
                     Ok newGameModel ->
+                        -- we continue the game
                         let
                             readyGameModel =
                                 removeTempPlayFieldFromGameModel newGameModel
@@ -160,21 +163,65 @@ update msg model =
                             ]
                         )
 
-            else if isEven blinks then
+            else
                 let
                     newGameModel =
-                        makeRowsWhiteInTempPlayFieldForGameModel fullRowNumbers model.gameModel
+                        changeRowColorInTempPlayFieldForGameModel color fullRowNumbers model.gameModel
                 in
                 ( { model | gameModel = newGameModel }
-                , nextFullRowsCommand blinks fullRowNumbers
+                , makeNextZetrisCommand color blinks fullRowNumbers
                 )
+
+        FullRowAnimation blinks fullRowNumbers ->
+            if blinks == 0 then
+                -- animation is finished, now we remove and check for ZETRIS
+                let
+                    newGameModelResult =
+                        removeRowsFromGameModelAndAdjustScore False fullRowNumbers model.gameModel
+                in
+                case newGameModelResult of
+                    Err err ->
+                        ( { model | error = Just err }, Cmd.none )
+
+                    Ok newGameModel ->
+                        -- after removing the full rows, we check if we have ZETRIS.
+                        let
+                            readyGameModel =
+                                removeTempPlayFieldFromGameModel newGameModel
+
+                            newModel =
+                                { model | gameModel = readyGameModel }
+
+                            fullRowsList =
+                                checkForZetris readyGameModel.playField fullRowNumbers
+                        in
+                        if List.isEmpty fullRowsList then
+                            ( newModel
+                            , Cmd.batch
+                                [ nextTickCmd
+                                , Task.perform (\_ -> MakeNewBrick) (Task.succeed True)
+                                ]
+                            )
+
+                        else
+                            --Start Zetris animation
+                            -- full rows, we start full row animation, after the animation, we remove
+                            ( newModel
+                            , Task.perform (\_ -> ZetrisAnimation zetrisAnimationStartColor zetrisRowBlinks fullRowsList) (Task.succeed True)
+                            )
 
             else
                 let
                     newGameModel =
-                        removeTempPlayFieldFromGameModel model.gameModel
+                        if isEven blinks then
+                            makeRowsWhiteInTempPlayFieldForGameModel fullRowNumbers model.gameModel
+
+                        else
+                            removeTempPlayFieldFromGameModel model.gameModel
                 in
-                ( { model | gameModel = newGameModel }, nextFullRowsCommand blinks fullRowNumbers )
+                ( { model | gameModel = newGameModel }
+                , makeNextFullRowsCommand blinks fullRowNumbers
+                )
 
 
 tryMakeBrickModel : Int -> Int -> Result String BrickModel
@@ -228,7 +275,7 @@ handleKeyPressed key model =
                                 Just MoveRight
 
                             "s" ->
-                                Just DropBrick
+                                Just DropBrickByPlayer
 
                             "w" ->
                                 Just SwitchForm

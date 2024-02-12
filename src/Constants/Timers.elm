@@ -1,4 +1,4 @@
-module Timers exposing (..)
+module Constants.Timers exposing (..)
 
 
 gameClockWaitTime : Float
@@ -19,7 +19,23 @@ newBrickWaitTime =
 
 rowBlinkTime : Float
 rowBlinkTime =
-    200
+    180
+
+
+zetrisBlinkTime : Float
+zetrisBlinkTime =
+    90
+
+
+numberOfRowBlinks : Int
+numberOfRowBlinks =
+    -- 6x rowBlinkTime
+    10
+
+
+zetrisRowBlinks : Int
+zetrisRowBlinks =
+    25
 
 
 startBrickDropTime : Float

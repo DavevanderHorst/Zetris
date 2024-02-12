@@ -1,4 +1,9 @@
-module PlayFieldSizes exposing (..)
+module Constants.PlayFieldSizes exposing (..)
+
+
+rightColumnWidth : Int
+rightColumnWidth =
+    500
 
 
 maximumRows : Int

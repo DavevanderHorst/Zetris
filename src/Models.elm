@@ -18,6 +18,7 @@ type alias GameModel =
     , tempPlayField : Maybe (Dict String Cell)
     , currentBrickModel : Maybe BrickModel
     , gameClock : List GameCommand
+    , score : Int
     }
 
 
@@ -38,6 +39,7 @@ type PlayerInput
 
 type GameCommand
     = DropBrick
+    | DropBrickByPlayer
     | MoveLeft
     | MoveRight
     | SwitchForm
@@ -45,6 +47,11 @@ type GameCommand
 
 type Color
     = White
+    | Violet
+    | Indigo
+    | Blue
+    | Green
+    | Yellow
     | Red
     | Orange
 

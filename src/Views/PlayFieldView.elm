@@ -1,5 +1,6 @@
 module Views.PlayFieldView exposing (..)
 
+import Constants.PlayFieldSizes exposing (cellSizeInPxString, halfCellWidthInPxString, negativeUpPaddingInPxString, playFieldBorderPaddingInPxString)
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
 import Functions.Colors exposing (cellColorToString)
@@ -7,7 +8,6 @@ import Html exposing (Html, div)
 import Html.Attributes as Attr
 import Messages exposing (Msg)
 import Models exposing (Cell, MainModel)
-import PlayFieldSizes exposing (cellSizeInPxString, halfCellWidthInPxString, negativeUpPaddingInPxString, playFieldBorderPaddingInPxString)
 import Views.ViewHelpers exposing (makeViewPlayField)
 
 

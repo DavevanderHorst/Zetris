@@ -6,11 +6,14 @@ type
     -- if we add a brick form, then we must add 1 to totalBrickTypes as well
     = Square ThreeFormType
     | LShape SixFormType
+    | SShape TwoFormType
+    | ZShape TwoFormType
+    | Straight ThreeFormType
 
 
 totalBrickTypes : Int
 totalBrickTypes =
-    2
+    5
 
 
 squareStartForm : BrickForm
@@ -21,6 +24,26 @@ squareStartForm =
 lShapeStartForm : BrickForm
 lShapeStartForm =
     LShape Aa
+
+
+sShapeStartForm : BrickForm
+sShapeStartForm =
+    SShape D
+
+
+zShapeStartForm : BrickForm
+zShapeStartForm =
+    ZShape D
+
+
+straightStartForm : BrickForm
+straightStartForm =
+    Straight A
+
+
+type TwoFormType
+    = D
+    | E
 
 
 type ThreeFormType
@@ -36,6 +59,16 @@ type SixFormType
     | Dd
     | Ee
     | Ff
+
+
+switchTwoFormType : TwoFormType -> TwoFormType
+switchTwoFormType formType =
+    case formType of
+        D ->
+            E
+
+        E ->
+            D
 
 
 switchThreeFormType : ThreeFormType -> ThreeFormType

@@ -1,11 +1,11 @@
 module Functions.Shapes.LShape exposing (..)
 
+import Constants.PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 import Functions.Base exposing (isEven)
 import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormType)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
-import PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 
 
 createLShapePlayFieldDictKeys : Int -> Int -> SixFormType -> List String
@@ -83,16 +83,16 @@ createCLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
     let
         upRowColumnNumber =
             if isEven startRowNumber then
-                startColumnNumber - 1
+                startColumnNumber
 
             else
-                startColumnNumber - 2
+                startColumnNumber - 1
 
         secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
 
         thirdKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 2)
 
         fourthKey =
             makePlayFieldDictKey (startRowNumber - 1) upRowColumnNumber
@@ -103,53 +103,6 @@ createCLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
 createDLShapePlayFieldDictKeys : Int -> Int -> String -> List String
 createDLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
     let
-        ( downRowColumnNumber, upRowColumnNumber ) =
-            if isEven startRowNumber then
-                ( startColumnNumber + 1, startColumnNumber )
-
-            else
-                ( startColumnNumber, startColumnNumber - 1 )
-
-        secondKey =
-            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
-
-        thirdKey =
-            makePlayFieldDictKey (startRowNumber - 1) upRowColumnNumber
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber - 2) startColumnNumber
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createELShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createELShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        ( downRowColumnNumber, upRowColumnNumber ) =
-            if isEven startRowNumber then
-                ( startColumnNumber, startColumnNumber + 1 )
-
-            else
-                ( startColumnNumber - 1, startColumnNumber )
-
-        secondKey =
-            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
-
-        oneUpRowNumber =
-            startRowNumber - 1
-
-        thirdKey =
-            makePlayFieldDictKey oneUpRowNumber upRowColumnNumber
-
-        fourthKey =
-            makePlayFieldDictKey oneUpRowNumber (upRowColumnNumber + 1)
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createFLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createFLShapePlayFieldDictKeys startRowNumber startColumnNumber _ =
-    let
         upRowColumnNumber =
             if isEven startRowNumber then
                 startColumnNumber + 1
@@ -157,20 +110,58 @@ createFLShapePlayFieldDictKeys startRowNumber startColumnNumber _ =
             else
                 startColumnNumber
 
-        firstKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
-
-        upRowNumber =
-            startRowNumber - 1
-
         secondKey =
-            makePlayFieldDictKey upRowNumber upRowColumnNumber
+            makePlayFieldDictKey (startRowNumber + 1) upRowColumnNumber
 
         thirdKey =
-            makePlayFieldDictKey upRowNumber (upRowColumnNumber - 1)
+            makePlayFieldDictKey (startRowNumber - 1) upRowColumnNumber
 
         fourthKey =
-            makePlayFieldDictKey upRowNumber (upRowColumnNumber - 2)
+            makePlayFieldDictKey (startRowNumber + 2) (startColumnNumber + 1)
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createELShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createELShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        downRowColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
+
+            else
+                startColumnNumber - 1
+
+        secondKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
+
+        thirdKey =
+            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber + 2) (startColumnNumber - 1)
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createFLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createFLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        downRowColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber + 1
+
+            else
+                startColumnNumber
+
+        secondKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
+
+        thirdKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber - 2)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
     in
     [ firstKey, secondKey, thirdKey, fourthKey ]
 
@@ -199,40 +190,40 @@ doesLShapeBumpWallWhenDropped formType brick =
                 False
 
         Cc ->
-            if isEvenIsLeftAndBaseColumnIs 2 brick then
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
                 True
 
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 2) brick then
                 True
 
             else
                 False
 
         Dd ->
-            if isEvenIsLeftAndBaseColumnIs 1 brick then
+            if isUnEvenIsLeftAndBaseColumnIs 1 brick then
                 True
 
-            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
                 True
 
             else
                 False
 
         Ee ->
-            if isEvenIsLeftAndBaseColumnIs 1 brick then
+            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
                 True
 
-            else if isEvenIsRightAndBaseColumnIs (evenRowColumnCells - 1) brick then
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
                 True
 
             else
                 False
 
         Ff ->
-            if isEvenIsLeftAndBaseColumnIs 2 brick then
+            if isUnEvenIsLeftAndBaseColumnIs 3 brick then
                 True
 
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
                 True
 
             else

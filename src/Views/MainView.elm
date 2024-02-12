@@ -1,15 +1,24 @@
 module Views.MainView exposing (..)
 
-import Functions.BrickMoveDirection exposing (brickMoveDirectionToString)
-import Html exposing (Html, button, div, text)
+import Constants.PlayFieldSizes exposing (playFieldHeight, playFieldWidth, rightColumnWidth)
+import Html exposing (Html, div)
 import Html.Attributes as Attr
-import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
 import Models exposing (BrickModel, Cell, Color(..), MainModel)
-import PlayFieldSizes exposing (playFieldHeight, playFieldWidth)
 import Views.ErrorScreen exposing (errorScreen)
 import Views.PlayFieldView exposing (renderPlayField)
+import Views.RightColumnView exposing (rightColumnView)
 import Views.ViewHelpers exposing (attrFloat, attrInt)
+
+
+marginBetweenBlocks : Int
+marginBetweenBlocks =
+    20
+
+
+marginBetweenBlocksString : String
+marginBetweenBlocksString =
+    String.fromInt marginBetweenBlocks
 
 
 mainView : MainModel -> Html Msg
@@ -21,14 +30,8 @@ mainView model =
         height =
             model.windowSize.height
 
-        nonPlayFieldWidth =
-            width - toFloat playFieldWidth
-
-        nonPlayFieldColumnWidth =
-            nonPlayFieldWidth / 2
-
         minWindowWidth =
-            playFieldWidth + leftColumnMinWidth + rightColumnMinWidth
+            playFieldWidth + rightColumnWidth + marginBetweenBlocks
 
         minWindowHeight =
             playFieldHeight
@@ -41,64 +44,34 @@ mainView model =
             [ attrFloat (Attr.style "width") width
             , attrFloat (Attr.style "height") height
             , Attr.style "display" "flex"
+            , Attr.style "justify-content" "center"
+            , Attr.style "align-items" "center"
             ]
-            [ -- left column
-              div
-                [ attrFloat (Attr.style "width") nonPlayFieldColumnWidth
+            [ div
+                [ attrInt (Attr.style "width") minWindowWidth
+                , attrInt (Attr.style "height") minWindowHeight
                 , Attr.style "display" "flex"
-                , Attr.style "justify-content" "right"
-                , Attr.style "align-items" "center"
+                , Attr.style "justify-content" "space-between"
                 ]
-                [ button
-                    [ onClick StartGame
-                    , Attr.style "margin-right" "20px"
+                [ -- playing field
+                  div
+                    [ attrInt (Attr.style "width") playFieldWidth
+                    , Attr.style "display" "flex"
+                    , Attr.style "justify-content" "center"
+                    , Attr.style "align-items" "center"
                     ]
-                    [ text "Start game" ]
-                ]
-            , -- playing field
-              div
-                [ attrInt (Attr.style "width") playFieldWidth
-                , Attr.style "display" "flex"
-                , Attr.style "align-items" "center"
-                ]
-                [ div
-                    [ Attr.style "width" "100%"
-                    , attrInt (Attr.style "height") playFieldHeight
-                    , Attr.style "background-color" "black"
+                    [ div
+                        [ Attr.style "width" "100%"
+                        , attrInt (Attr.style "height") playFieldHeight
+                        , Attr.style "background-color" "black"
+                        ]
+                        [ renderPlayField model ]
                     ]
-                    [ renderPlayField model ]
-                ]
-            , -- right column
-              div
-                [ attrFloat (Attr.style "width") nonPlayFieldColumnWidth
-                , Attr.style "margin" "20px"
-                ]
-                [ case model.gameModel.currentBrickModel of
-                    Nothing ->
-                        div [] [ text "No current brick model." ]
-
-                    Just brickModel ->
-                        div []
-                            [ case model.error of
-                                Nothing ->
-                                    div [] []
-
-                                Just error ->
-                                    div [] [ text error ]
-                            , div [] [ text ("direction : " ++ brickMoveDirectionToString brickModel.direction) ]
-                            , div [] [ text ("row : " ++ String.fromInt brickModel.baseRow) ]
-                            , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
-                            , div [] [ text ("column : " ++ String.fromInt brickModel.baseColumn) ]
-                            ]
+                , -- right column
+                  div
+                    [ attrInt (Attr.style "width") rightColumnWidth
+                    ]
+                    [ rightColumnView model
+                    ]
                 ]
             ]
-
-
-leftColumnMinWidth : Int
-leftColumnMinWidth =
-    100
-
-
-rightColumnMinWidth : Int
-rightColumnMinWidth =
-    100

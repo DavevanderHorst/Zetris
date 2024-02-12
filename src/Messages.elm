@@ -1,6 +1,7 @@
 module Messages exposing (..)
 
 import Browser.Dom exposing (Viewport)
+import Models exposing (Color)
 
 
 type Msg
@@ -15,3 +16,4 @@ type Msg
     | DropCurrentBrick
     | ActivatePlayerInput
     | FullRowAnimation Int (List Int)
+    | ZetrisAnimation Color Int (List Int)

@@ -5,7 +5,10 @@ import Functions.BrickForm exposing (BrickForm(..), ThreeFormType)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.PlayFieldDictKeys exposing (getRowNumberFromPlayFieldDictKey)
 import Functions.Shapes.LShape exposing (createLShapePlayFieldDictKeys, doesLShapeBumpWallWhenDropped, switchLShapeBrickForm)
+import Functions.Shapes.SShape exposing (createSShapePlayFieldDictKeys, doesSShapeBumpWallWhenDropped, switchSShapeBrickForm)
 import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys, doesSquareBumpWallWhenDropped, switchSquareBrickForm)
+import Functions.Shapes.StraightShape exposing (createStraightPlayFieldDictKeys, doesStraightBumpWallWhenDropped, switchStraightShape)
+import Functions.Shapes.ZShape exposing (createZShapePlayFieldDictKeys, doesZShapeBumpWallWhenDropped, switchZShapeBrickForm)
 import Models exposing (BrickModel, Color(..))
 
 
@@ -17,6 +20,15 @@ switchBrickForm brick =
 
         LShape formType ->
             switchLShapeBrickForm formType brick
+
+        Straight formType ->
+            switchStraightShape formType brick
+
+        SShape formType ->
+            switchSShapeBrickForm formType brick
+
+        ZShape formType ->
+            switchZShapeBrickForm formType brick
 
 
 getCurrentRowsFromBrick : BrickModel -> List Int
@@ -91,6 +103,27 @@ changeBrickDirectionWhenBumpingWallsWhenDropped brick =
 
                     else
                         brick.direction
+
+                Straight formType ->
+                    if doesStraightBumpWallWhenDropped formType brick then
+                        switchBrickMoveDirection brick.direction
+
+                    else
+                        brick.direction
+
+                SShape formType ->
+                    if doesSShapeBumpWallWhenDropped formType brick then
+                        switchBrickMoveDirection brick.direction
+
+                    else
+                        brick.direction
+
+                ZShape formType ->
+                    if doesZShapeBumpWallWhenDropped formType brick then
+                        switchBrickMoveDirection brick.direction
+
+                    else
+                        brick.direction
     in
     { brick | direction = directionForDropping }
 
@@ -155,6 +188,15 @@ getStartRowNumberForBrickForm form =
         LShape _ ->
             3
 
+        Straight _ ->
+            2
+
+        SShape _ ->
+            2
+
+        ZShape _ ->
+            2
+
 
 createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
 createPlayFieldDictKeysForBrickForm row col form =
@@ -164,3 +206,12 @@ createPlayFieldDictKeysForBrickForm row col form =
 
         LShape formType ->
             createLShapePlayFieldDictKeys row col formType
+
+        Straight formType ->
+            createStraightPlayFieldDictKeys row col formType
+
+        SShape formType ->
+            createSShapePlayFieldDictKeys row col formType
+
+        ZShape formType ->
+            createZShapePlayFieldDictKeys row col formType

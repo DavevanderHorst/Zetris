@@ -1,8 +1,11 @@
 module Functions.GameModel exposing (..)
 
+import Constants.Errors exposing (noRowsToRemoveError, toManyRowsToRemoveError)
+import Constants.Score exposing (finishedBrickPoints)
 import Functions.GameClock exposing (addCommandToBackOfGameClock, addCommandToFrontOfGameClock)
-import Functions.Playfield exposing (canBrickBePlacedInPlayField, dropRowNumberInPlayField, makeRowWhiteInPlayField, setBrickInPlayField)
-import Models exposing (BrickModel, Cell, GameCommand, GameModel)
+import Functions.GameScore exposing (addRowScoreToGameModel)
+import Functions.Playfield exposing (canBrickBePlacedInPlayField, changeRowColorInPlayField, dropRowNumberInPlayField, setBrickInPlayField)
+import Models exposing (BrickModel, Cell, Color(..), GameCommand, GameModel)
 
 
 trySetNewBrickInGameModel : GameModel -> BrickModel -> Result String GameModel
@@ -71,6 +74,7 @@ updateGameModelForFinishedBrick gameModel =
                             | playField = playField
                             , tempPlayField = Nothing
                             , currentBrickModel = Just newBrickModel
+                            , score = gameModel.score + finishedBrickPoints
                           }
                         , newBrickModel
                         )
@@ -97,9 +101,14 @@ removeTempPlayFieldFromGameModel gameModel =
 
 makeRowsWhiteInTempPlayFieldForGameModel : List Int -> GameModel -> GameModel
 makeRowsWhiteInTempPlayFieldForGameModel rowNumbers gameModel =
+    changeRowColorInTempPlayFieldForGameModel White rowNumbers gameModel
+
+
+changeRowColorInTempPlayFieldForGameModel : Color -> List Int -> GameModel -> GameModel
+changeRowColorInTempPlayFieldForGameModel color rowNumbers gameModel =
     let
         newTempPlayField =
-            List.foldl makeRowWhiteInPlayField gameModel.playField rowNumbers
+            List.foldl (changeRowColorInPlayField color) gameModel.playField rowNumbers
     in
     { gameModel | tempPlayField = Just newTempPlayField }
 
@@ -108,34 +117,43 @@ makeRowsWhiteInPlayFieldForGameModel : List Int -> GameModel -> GameModel
 makeRowsWhiteInPlayFieldForGameModel rowNumbers gameModel =
     let
         newPlayField =
-            List.foldl makeRowWhiteInPlayField gameModel.playField rowNumbers
+            List.foldl (changeRowColorInPlayField White) gameModel.playField rowNumbers
     in
     { gameModel | playField = newPlayField }
 
 
-removeRowsFromGameModel : List Int -> GameModel -> Result String GameModel
-removeRowsFromGameModel rows gameModel =
+removeRowsFromGameModelAndAdjustScore : Bool -> List Int -> GameModel -> Result String GameModel
+removeRowsFromGameModelAndAdjustScore isZetris rows gameModel =
     if List.isEmpty rows then
-        Err "No rows to remove from game model"
+        Err noRowsToRemoveError
 
     else
         let
             numberOfRows =
                 List.length rows
-
-            startRowNumber =
-                Maybe.withDefault 0 (List.minimum rows) - 1
         in
-        let
-            dropRowResult =
-                dropRowFromGameModelRecursive startRowNumber numberOfRows (Ok gameModel)
-        in
-        case dropRowResult of
-            Err err ->
-                Err err
+        if numberOfRows > 4 then
+            Err (toManyRowsToRemoveError numberOfRows)
 
-            Ok newGameModel ->
-                Ok (makeRowsWhiteInPlayFieldForGameModel (List.range 1 numberOfRows) newGameModel)
+        else
+            let
+                startRowNumber =
+                    Maybe.withDefault 0 (List.minimum rows) - 1
+            in
+            let
+                dropRowResult =
+                    dropRowFromGameModelRecursive startRowNumber numberOfRows (Ok gameModel)
+            in
+            case dropRowResult of
+                Err err ->
+                    Err err
+
+                Ok newGameModel ->
+                    let
+                        newGameModelWithScore =
+                            addRowScoreToGameModel numberOfRows newGameModel isZetris
+                    in
+                    Ok (makeRowsWhiteInPlayFieldForGameModel (List.range 1 numberOfRows) newGameModelWithScore)
 
 
 dropRowFromGameModelRecursive : Int -> Int -> Result String GameModel -> Result String GameModel
