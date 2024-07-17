@@ -42,31 +42,31 @@ generatePlayFieldRow rowNumber colNumber dict =
             makePlayFieldDictKey rowNumber colNumber
 
         color =
-            if rowNumber == maximumRows && colNumber < 8 then
-                Orange
-
-            else if rowNumber == maximumRows && colNumber > 8 then
-                Red
-
-            else if rowNumber == maximumRows - 1 && colNumber < 6 then
-                Orange
-
-            else if rowNumber == maximumRows - 1 && colNumber > 8 then
-                Red
-
-            else if rowNumber == maximumRows - 2 && colNumber < 7 then
-                Red
-
-            else if rowNumber == maximumRows - 2 && colNumber > 8 then
-                Red
-
-            else if rowNumber == maximumRows - 3 && colNumber < 5 then
-                Red
-
-            else if rowNumber == maximumRows - 4 && colNumber > 10 then
-                Red
-
-            else
-                White
+            --if rowNumber == maximumRows && colNumber < 8 then
+            --    Orange
+            --
+            --else if rowNumber == maximumRows && colNumber > 8 then
+            --    Red
+            --
+            --else if rowNumber == maximumRows - 1 && colNumber < 6 then
+            --    Orange
+            --
+            --else if rowNumber == maximumRows - 1 && colNumber > 8 then
+            --    Red
+            --
+            --else if rowNumber == maximumRows - 2 && colNumber < 7 then
+            --    Red
+            --
+            --else if rowNumber == maximumRows - 2 && colNumber > 8 then
+            --    Red
+            --
+            --else if rowNumber == maximumRows - 3 && colNumber < 5 then
+            --    Red
+            --
+            --else if rowNumber == maximumRows - 4 && colNumber > 10 then
+            --    Red
+            --
+            --else
+            White
     in
     Dict.insert key (Cell color) dict

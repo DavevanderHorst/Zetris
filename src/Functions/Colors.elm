@@ -17,13 +17,19 @@ cellColorToString color =
             "indigo"
 
         Blue ->
-            "blue"
+            "#0093ff"
+
+        DarkBlue ->
+            "#1b00ff"
 
         Green ->
-            "green"
+            "#8fff00"
+
+        DarkGreen ->
+            "#1e8449"
 
         Yellow ->
-            "yellow"
+            "#ffd500"
 
         Orange ->
             "orange"
@@ -50,9 +56,15 @@ getNextZetrisAnimationColor color =
             Blue
 
         Blue ->
+            DarkBlue
+
+        DarkBlue ->
             Green
 
         Green ->
+            DarkGreen
+
+        DarkGreen ->
             Yellow
 
         Yellow ->
@@ -74,6 +86,9 @@ getBrickFormColor form =
         LShape _ ->
             Orange
 
+        ReversedLShape _ ->
+            Indigo
+
         Straight _ ->
             Blue
 
@@ -82,3 +97,9 @@ getBrickFormColor form =
 
         ZShape _ ->
             Green
+
+        BShape _ ->
+            DarkBlue
+
+        PShape _ ->
+            DarkGreen

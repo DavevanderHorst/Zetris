@@ -14,7 +14,7 @@ import Functions.GameCommand exposing (executeGameCommand)
 import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, changeRowColorInTempPlayFieldForGameModel, emptyGameClock, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModelAndAdjustScore, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
 import Functions.MainModel exposing (setGameClockInMainModel)
 import Functions.Playfield exposing (checkForZetris)
-import Functions.Random exposing (tryGetBrickForm, tryGetRandomDirection)
+import Functions.Random exposing (tryGetRandomBrickForm, tryGetRandomDirection)
 import Json.Decode as Decode
 import Messages exposing (Msg(..))
 import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, startSize)
@@ -228,7 +228,7 @@ tryMakeBrickModel : Int -> Int -> Result String BrickModel
 tryMakeBrickModel randomBrickForm randomDirection =
     let
         brickFormResult =
-            tryGetBrickForm randomBrickForm
+            tryGetRandomBrickForm randomBrickForm
 
         directionResult =
             tryGetRandomDirection randomDirection

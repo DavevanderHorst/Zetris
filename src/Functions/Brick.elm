@@ -4,7 +4,10 @@ import Functions.Base exposing (isEven)
 import Functions.BrickForm exposing (BrickForm(..), ThreeFormType)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.PlayFieldDictKeys exposing (getRowNumberFromPlayFieldDictKey)
+import Functions.Shapes.Bshape exposing (createBShapePlayFieldDictKeys, doesBShapeBumpWallWhenDropped, switchBShapeBrickForm)
 import Functions.Shapes.LShape exposing (createLShapePlayFieldDictKeys, doesLShapeBumpWallWhenDropped, switchLShapeBrickForm)
+import Functions.Shapes.PShape exposing (createPShapePlayFieldDictKeys, doesPShapeBumpWallWhenDropped, switchPShapeBrickForm)
+import Functions.Shapes.ReversedLShape exposing (createReversedLShapePlayFieldDictKeys, doesReversedLShapeBumpWallWhenDropped, switchReversedLShapeBrickForm)
 import Functions.Shapes.SShape exposing (createSShapePlayFieldDictKeys, doesSShapeBumpWallWhenDropped, switchSShapeBrickForm)
 import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys, doesSquareBumpWallWhenDropped, switchSquareBrickForm)
 import Functions.Shapes.StraightShape exposing (createStraightPlayFieldDictKeys, doesStraightBumpWallWhenDropped, switchStraightShape)
@@ -21,6 +24,9 @@ switchBrickForm brick =
         LShape formType ->
             switchLShapeBrickForm formType brick
 
+        ReversedLShape formType ->
+            switchReversedLShapeBrickForm formType brick
+
         Straight formType ->
             switchStraightShape formType brick
 
@@ -29,6 +35,12 @@ switchBrickForm brick =
 
         ZShape formType ->
             switchZShapeBrickForm formType brick
+
+        BShape formType ->
+            switchBShapeBrickForm formType brick
+
+        PShape formType ->
+            switchPShapeBrickForm formType brick
 
 
 getCurrentRowsFromBrick : BrickModel -> List Int
@@ -88,42 +100,38 @@ dropBrickModel brick =
 changeBrickDirectionWhenBumpingWallsWhenDropped : BrickModel -> BrickModel
 changeBrickDirectionWhenBumpingWallsWhenDropped brick =
     let
-        directionForDropping =
+        switchDirectionForDropping =
             case brick.form of
                 Square formType ->
-                    if doesSquareBumpWallWhenDropped formType brick then
-                        switchBrickMoveDirection brick.direction
-
-                    else
-                        brick.direction
+                    doesSquareBumpWallWhenDropped formType brick
 
                 LShape formType ->
-                    if doesLShapeBumpWallWhenDropped formType brick then
-                        switchBrickMoveDirection brick.direction
+                    doesLShapeBumpWallWhenDropped formType brick
 
-                    else
-                        brick.direction
+                ReversedLShape formType ->
+                    doesReversedLShapeBumpWallWhenDropped formType brick
 
                 Straight formType ->
-                    if doesStraightBumpWallWhenDropped formType brick then
-                        switchBrickMoveDirection brick.direction
-
-                    else
-                        brick.direction
+                    doesStraightBumpWallWhenDropped formType brick
 
                 SShape formType ->
-                    if doesSShapeBumpWallWhenDropped formType brick then
-                        switchBrickMoveDirection brick.direction
-
-                    else
-                        brick.direction
+                    doesSShapeBumpWallWhenDropped formType brick
 
                 ZShape formType ->
-                    if doesZShapeBumpWallWhenDropped formType brick then
-                        switchBrickMoveDirection brick.direction
+                    doesZShapeBumpWallWhenDropped formType brick
 
-                    else
-                        brick.direction
+                BShape formType ->
+                    doesBShapeBumpWallWhenDropped formType brick
+
+                PShape formType ->
+                    doesPShapeBumpWallWhenDropped formType brick
+
+        directionForDropping =
+            if switchDirectionForDropping then
+                switchBrickMoveDirection brick.direction
+
+            else
+                brick.direction
     in
     { brick | direction = directionForDropping }
 
@@ -188,6 +196,9 @@ getStartRowNumberForBrickForm form =
         LShape _ ->
             3
 
+        ReversedLShape _ ->
+            3
+
         Straight _ ->
             2
 
@@ -196,6 +207,12 @@ getStartRowNumberForBrickForm form =
 
         ZShape _ ->
             2
+
+        BShape _ ->
+            3
+
+        PShape _ ->
+            3
 
 
 createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String
@@ -207,6 +224,9 @@ createPlayFieldDictKeysForBrickForm row col form =
         LShape formType ->
             createLShapePlayFieldDictKeys row col formType
 
+        ReversedLShape formType ->
+            createReversedLShapePlayFieldDictKeys row col formType
+
         Straight formType ->
             createStraightPlayFieldDictKeys row col formType
 
@@ -215,3 +235,9 @@ createPlayFieldDictKeysForBrickForm row col form =
 
         ZShape formType ->
             createZShapePlayFieldDictKeys row col formType
+
+        BShape formType ->
+            createBShapePlayFieldDictKeys row col formType
+
+        PShape formType ->
+            createPShapePlayFieldDictKeys row col formType

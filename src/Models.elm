@@ -50,7 +50,9 @@ type Color
     | Violet
     | Indigo
     | Blue
+    | DarkBlue
     | Green
+    | DarkGreen
     | Yellow
     | Red
     | Orange

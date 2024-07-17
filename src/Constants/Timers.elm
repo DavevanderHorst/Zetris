@@ -29,7 +29,7 @@ zetrisBlinkTime =
 
 numberOfRowBlinks : Int
 numberOfRowBlinks =
-    -- 6x rowBlinkTime
+    -- x rowBlinkTime
     10
 
 

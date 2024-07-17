@@ -3,17 +3,20 @@ module Functions.BrickForm exposing (..)
 
 type
     BrickForm
-    -- if we add a brick form, then we must add 1 to totalBrickTypes as well
+    -- if we add a brick form, then we must add 1 to totalBrickTypes below as well
     = Square ThreeFormType
     | LShape SixFormType
+    | ReversedLShape SixFormType
     | SShape TwoFormType
     | ZShape TwoFormType
     | Straight ThreeFormType
+    | BShape SixFormType
+    | PShape SixFormType
 
 
 totalBrickTypes : Int
 totalBrickTypes =
-    5
+    8
 
 
 squareStartForm : BrickForm
@@ -23,7 +26,22 @@ squareStartForm =
 
 lShapeStartForm : BrickForm
 lShapeStartForm =
-    LShape Aa
+    LShape F
+
+
+bShapeStartForm : BrickForm
+bShapeStartForm =
+    BShape F
+
+
+pShapeStartForm : BrickForm
+pShapeStartForm =
+    PShape F
+
+
+reversedLShapeStartForm : BrickForm
+reversedLShapeStartForm =
+    ReversedLShape F
 
 
 sShapeStartForm : BrickForm
@@ -53,12 +71,12 @@ type ThreeFormType
 
 
 type SixFormType
-    = Aa
-    | Bb
-    | Cc
-    | Dd
-    | Ee
-    | Ff
+    = F
+    | G
+    | H
+    | I
+    | J
+    | K
 
 
 switchTwoFormType : TwoFormType -> TwoFormType
@@ -87,20 +105,20 @@ switchThreeFormType formType =
 switchSixFormType : SixFormType -> SixFormType
 switchSixFormType formType =
     case formType of
-        Aa ->
-            Bb
+        F ->
+            G
 
-        Bb ->
-            Cc
+        G ->
+            H
 
-        Cc ->
-            Dd
+        H ->
+            I
 
-        Dd ->
-            Ee
+        I ->
+            J
 
-        Ee ->
-            Ff
+        J ->
+            K
 
-        Ff ->
-            Aa
+        K ->
+            F
