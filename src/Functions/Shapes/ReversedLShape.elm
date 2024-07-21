@@ -2,10 +2,22 @@ module Functions.Shapes.ReversedLShape exposing (..)
 
 import Constants.PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormType)
+import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormTypeRight)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
+
+
+switchReversedLShapeBrickForm : SixFormType -> BrickModel -> BrickModel
+switchReversedLShapeBrickForm formType brick =
+    let
+        newFormType =
+            switchSixFormTypeRight formType
+
+        newBrickDictKeys =
+            createReversedLShapePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
+    in
+    { brick | form = ReversedLShape newFormType, playFieldDictKeys = newBrickDictKeys }
 
 
 createReversedLShapePlayFieldDictKeys : Int -> Int -> SixFormType -> List String
@@ -15,29 +27,139 @@ createReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber formType 
             makePlayFieldDictKey startRowNumber startColumnNumber
     in
     case formType of
+        A ->
+            createAReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+
+        B ->
+            createBReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+
+        C ->
+            createCReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+
+        D ->
+            createDReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+
+        E ->
+            createEReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+
         F ->
             createFReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        G ->
-            createGReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        H ->
-            createHReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+createAReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createAReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        downRowLeftColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
 
-        I ->
-            createIReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+            else
+                startColumnNumber - 1
 
-        J ->
-            createJReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+        secondKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
 
-        K ->
-            createKReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
+        thirdKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber - 1) (downRowLeftColumnNumber - 1)
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createBReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createBReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        downRowLeftColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
+
+            else
+                startColumnNumber - 1
+
+        secondKey =
+            makePlayFieldDictKey (startRowNumber - 1) downRowLeftColumnNumber
+
+        thirdKey =
+            makePlayFieldDictKey (startRowNumber + 1) (downRowLeftColumnNumber + 1)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber - 2) startColumnNumber
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createCReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createCReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        upRowLeftColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
+
+            else
+                startColumnNumber - 1
+
+        secondKey =
+            makePlayFieldDictKey (startRowNumber - 1) (upRowLeftColumnNumber + 1)
+
+        thirdKey =
+            makePlayFieldDictKey (startRowNumber - 1) (upRowLeftColumnNumber + 2)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber + 1) upRowLeftColumnNumber
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createDReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createDReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        upRowRightColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber + 1
+
+            else
+                startColumnNumber
+
+        secondKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
+
+        thirdKey =
+            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber + 1) (upRowRightColumnNumber + 1)
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
+
+
+createEReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
+createEReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
+    let
+        downRowLeftColumnNumber =
+            if isEven startRowNumber then
+                startColumnNumber
+
+            else
+                startColumnNumber - 1
+
+        secondKey =
+            makePlayFieldDictKey (startRowNumber - 1) downRowLeftColumnNumber
+
+        thirdKey =
+            makePlayFieldDictKey (startRowNumber + 1) (downRowLeftColumnNumber + 1)
+
+        fourthKey =
+            makePlayFieldDictKey (startRowNumber + 2) startColumnNumber
+    in
+    [ firstKey, secondKey, thirdKey, fourthKey ]
 
 
 createFReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
 createFReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
     let
-        upRowColumnNumber =
+        downRowRightColumnNumber =
             if isEven startRowNumber then
                 startColumnNumber + 1
 
@@ -45,123 +167,13 @@ createFReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey
                 startColumnNumber
 
         secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
+            makePlayFieldDictKey (startRowNumber - 1) downRowRightColumnNumber
 
         thirdKey =
-            makePlayFieldDictKey (startRowNumber - 1) upRowColumnNumber
+            makePlayFieldDictKey (startRowNumber + 1) (downRowRightColumnNumber - 1)
 
         fourthKey =
-            makePlayFieldDictKey (startRowNumber - 2) (startColumnNumber + 1)
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createGReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createGReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        upRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber
-
-            else
-                startColumnNumber - 1
-
-        secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
-
-        thirdKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 2)
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber - 1) upRowColumnNumber
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createHReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createHReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        upAndDownRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber + 1
-
-            else
-                startColumnNumber
-
-        secondKey =
-            makePlayFieldDictKey (startRowNumber - 1) upAndDownRowColumnNumber
-
-        thirdKey =
-            makePlayFieldDictKey (startRowNumber + 1) upAndDownRowColumnNumber
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber + 2) (startColumnNumber + 1)
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createIReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createIReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        downRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber
-
-            else
-                startColumnNumber - 1
-
-        secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber + 1)
-
-        thirdKey =
-            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber + 2) (startColumnNumber - 1)
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createJReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createJReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        downRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber + 1
-
-            else
-                startColumnNumber
-
-        secondKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber - 1)
-
-        thirdKey =
-            makePlayFieldDictKey startRowNumber (startColumnNumber - 2)
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber + 1) downRowColumnNumber
-    in
-    [ firstKey, secondKey, thirdKey, fourthKey ]
-
-
-createKReversedLShapePlayFieldDictKeys : Int -> Int -> String -> List String
-createKReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
-    let
-        downAndUpRowColumnNumber =
-            if isEven startRowNumber then
-                startColumnNumber
-
-            else
-                startColumnNumber - 1
-
-        secondKey =
-            makePlayFieldDictKey (startRowNumber - 1) downAndUpRowColumnNumber
-
-        thirdKey =
-            makePlayFieldDictKey (startRowNumber + 1) downAndUpRowColumnNumber
-
-        fourthKey =
-            makePlayFieldDictKey (startRowNumber - 2) (startColumnNumber - 1)
+            makePlayFieldDictKey (startRowNumber + 1) (downRowRightColumnNumber - 2)
     in
     [ firstKey, secondKey, thirdKey, fourthKey ]
 
@@ -169,8 +181,8 @@ createKReversedLShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey
 doesReversedLShapeBumpWallWhenDropped : SixFormType -> BrickModel -> Bool
 doesReversedLShapeBumpWallWhenDropped formType brick =
     case formType of
-        F ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+        A ->
+            if isEvenIsLeftAndBaseColumnIs 2 brick then
                 True
 
             else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
@@ -179,38 +191,8 @@ doesReversedLShapeBumpWallWhenDropped formType brick =
             else
                 False
 
-        G ->
+        B ->
             if isEvenIsLeftAndBaseColumnIs 1 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 2) brick then
-                True
-
-            else
-                False
-
-        H ->
-            if isUnEvenIsLeftAndBaseColumnIs 1 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
-                True
-
-            else
-                False
-
-        I ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
-                True
-
-            else
-                False
-
-        J ->
-            if isUnEvenIsLeftAndBaseColumnIs 3 brick then
                 True
 
             else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
@@ -219,24 +201,42 @@ doesReversedLShapeBumpWallWhenDropped formType brick =
             else
                 False
 
-        K ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+        C ->
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
                 True
 
-            else if isUnEvenIsRightAndBaseColumnIs unevenRowColumnCells brick then
+            else if isEvenIsRightAndBaseColumnIs (evenRowColumnCells - 1) brick then
                 True
 
             else
                 False
 
+        D ->
+            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+                True
 
-switchReversedLShapeBrickForm : SixFormType -> BrickModel -> BrickModel
-switchReversedLShapeBrickForm formType brick =
-    let
-        newFormType =
-            switchSixFormType formType
+            else if isEvenIsRightAndBaseColumnIs (evenRowColumnCells - 1) brick then
+                True
 
-        newBrickDictKeys =
-            createReversedLShapePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
-    in
-    { brick | form = ReversedLShape newFormType, playFieldDictKeys = newBrickDictKeys }
+            else
+                False
+
+        E ->
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
+                True
+
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
+
+            else
+                False
+
+        F ->
+            if isEvenIsLeftAndBaseColumnIs 2 brick then
+                True
+
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
+
+            else
+                False

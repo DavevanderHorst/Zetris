@@ -3,15 +3,16 @@ module Main exposing (main)
 import Browser
 import Browser.Dom exposing (Viewport)
 import Browser.Events exposing (onResize)
-import Constants.PlayFieldSizes exposing (middleColumnCellNumber)
+import Constants.PlayFieldSizes exposing (brickStartRowNumber)
 import Constants.Timers exposing (activatePlayerInPutWaitTime, zetrisRowBlinks)
 import Functions.Base exposing (isEven)
-import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, getStartRowNumberForBrickForm, isBrickActive, isThereCurrentActiveBrick)
+import Functions.Brick exposing (createPlayFieldDictKeysForBrickForm, isBrickActive, isThereCurrentActiveBrick)
+import Functions.BrickForm exposing (getStartColumnNumberForBrickForm)
 import Functions.Colors exposing (zetrisAnimationStartColor)
 import Functions.Commands exposing (fallingBrickCommand, makeNextFullRowsCommand, makeNextZetrisCommand, newBrickCommand, nextTickCmd)
 import Functions.GameClock exposing (tickGameClock)
 import Functions.GameCommand exposing (executeGameCommand)
-import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, changeRowColorInTempPlayFieldForGameModel, emptyGameClock, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModelAndAdjustScore, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
+import Functions.GameModel exposing (addGameCommandToBackOfGameModelClock, addGameCommandToFrontOfGameModelClock, changeRowColorInTempPlayFieldForGameModel, emptyGameClockForGameModel, makeRowsWhiteInTempPlayFieldForGameModel, removeRowsFromGameModelAndAdjustScore, removeTempPlayFieldFromGameModel, trySetNewBrickInGameModel)
 import Functions.MainModel exposing (setGameClockInMainModel)
 import Functions.Playfield exposing (checkForZetris)
 import Functions.Random exposing (tryGetRandomBrickForm, tryGetRandomDirection)
@@ -70,7 +71,7 @@ update msg model =
             handleKeyPressed key model
 
         StartGame ->
-            ( model
+            ( { model | error = Just "ddd" }
             , Cmd.batch
                 [ newBrickCommand
                 , Task.perform (\_ -> StartClock) (Task.succeed True)
@@ -81,7 +82,13 @@ update msg model =
             update Tick model
 
         ActivatePlayerInput ->
-            ( { model | playerInput = Possible }, Cmd.none )
+            -- This is activated after the cool-down is over for pressing a key.
+            -- only if there still is an active brick
+            if isBrickActive model.gameModel.currentBrickModel && model.playerInput == Stopped then
+                ( { model | playerInput = Possible }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         Tick ->
             let
@@ -97,7 +104,10 @@ update msg model =
                         newModel =
                             setGameClockInMainModel newGameClock model
                     in
-                    executeGameCommand nextCommand newModel
+                    ( newModel, Task.perform ExecuteGameCommand (Task.succeed nextCommand) )
+
+        ExecuteGameCommand command ->
+            executeGameCommand command model
 
         MakeNewBrick ->
             if isBrickActive model.gameModel.currentBrickModel then
@@ -118,15 +128,15 @@ update msg model =
                         Ok newGameModel ->
                             let
                                 finishedGameModel =
-                                    emptyGameClock newGameModel
+                                    emptyGameClockForGameModel newGameModel
                             in
-                            ( { model | gameModel = finishedGameModel, playerInput = Possible }, fallingBrickCommand )
+                            ( { model | gameModel = finishedGameModel, playerInput = Possible, error = Nothing }, fallingBrickCommand )
 
                         Err error ->
-                            ( { model | error = Just error }, Cmd.none )
+                            ( { model | error = Just (error ++ " NewBrick") }, Cmd.none )
 
                 Err error ->
-                    ( { model | error = Just error }, Cmd.none )
+                    ( { model | error = Just (error ++ " NewBrick") }, Cmd.none )
 
         DropCurrentBrick ->
             if isBrickActive model.gameModel.currentBrickModel then
@@ -137,7 +147,7 @@ update msg model =
                 ( { model | gameModel = newGameModel }, fallingBrickCommand )
 
             else
-                ( { model | error = Just "No active brick" }, Cmd.none )
+                ( { model | error = Just "DropCurrentBrick, no active brick" }, Cmd.none )
 
         ZetrisAnimation color blinks fullRowNumbers ->
             if blinks == 0 then
@@ -239,10 +249,10 @@ tryMakeBrickModel randomBrickForm randomDirection =
                 Ok direction ->
                     let
                         startRowNumber =
-                            getStartRowNumberForBrickForm brickForm
+                            brickStartRowNumber
 
                         startColumnNumber =
-                            middleColumnCellNumber
+                            getStartColumnNumberForBrickForm brickForm
 
                         playFieldDictKeys =
                             createPlayFieldDictKeysForBrickForm startRowNumber startColumnNumber brickForm
@@ -250,10 +260,10 @@ tryMakeBrickModel randomBrickForm randomDirection =
                     Ok (BrickModel brickForm direction startRowNumber startColumnNumber playFieldDictKeys True)
 
                 Err error ->
-                    Err error
+                    Err (error ++ " -- tryMakeBrickModel")
 
         Err error ->
-            Err error
+            Err (error ++ " -- tryMakeBrickModel")
 
 
 handleKeyPressed : String -> MainModel -> ( MainModel, Cmd Msg )
@@ -297,7 +307,7 @@ handleKeyPressed key model =
                         )
 
             Err _ ->
-                ( { model | error = Just "Cant press keys, brick is not active" }
+                ( { model | error = Just "Cant press keys, brick is not active -- handleKeyPressed" }
                 , Cmd.none
                 )
 

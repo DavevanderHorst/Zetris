@@ -1,15 +1,17 @@
 module Functions.BrickForm exposing (..)
 
+import Constants.PlayFieldSizes exposing (brickStartRowMiddleColumnCellNumber)
+
 
 type
     BrickForm
     -- if we add a brick form, then we must add 1 to totalBrickTypes below as well
-    = Square ThreeFormType
+    = Square SixFormType
     | LShape SixFormType
     | ReversedLShape SixFormType
-    | SShape TwoFormType
-    | ZShape TwoFormType
-    | Straight ThreeFormType
+    | SShape SixFormType
+    | ZShape SixFormType
+    | Straight SixFormType
     | BShape SixFormType
     | PShape SixFormType
 
@@ -26,71 +28,78 @@ squareStartForm =
 
 lShapeStartForm : BrickForm
 lShapeStartForm =
-    LShape F
+    LShape A
 
 
 bShapeStartForm : BrickForm
 bShapeStartForm =
-    BShape F
+    BShape A
 
 
 pShapeStartForm : BrickForm
 pShapeStartForm =
-    PShape F
+    PShape A
 
 
 reversedLShapeStartForm : BrickForm
 reversedLShapeStartForm =
-    ReversedLShape F
+    ReversedLShape A
 
 
 sShapeStartForm : BrickForm
 sShapeStartForm =
-    SShape D
+    SShape A
 
 
 zShapeStartForm : BrickForm
 zShapeStartForm =
-    ZShape D
+    ZShape A
 
 
 straightStartForm : BrickForm
 straightStartForm =
-    Straight A
-
-
-type TwoFormType
-    = D
-    | E
-
-
-type ThreeFormType
-    = A
-    | B
-    | C
+    Straight B
 
 
 type SixFormType
-    = F
-    | G
-    | H
-    | I
-    | J
-    | K
+    = A
+    | B
+    | C
+    | D
+    | E
+    | F
 
 
-switchTwoFormType : TwoFormType -> TwoFormType
-switchTwoFormType formType =
-    case formType of
-        D ->
-            E
+getStartColumnNumberForBrickForm : BrickForm -> Int
+getStartColumnNumberForBrickForm brickForm =
+    case brickForm of
+        Square _ ->
+            brickStartRowMiddleColumnCellNumber
 
-        E ->
-            D
+        LShape _ ->
+            brickStartRowMiddleColumnCellNumber
+
+        ReversedLShape _ ->
+            brickStartRowMiddleColumnCellNumber
+
+        SShape _ ->
+            brickStartRowMiddleColumnCellNumber
+
+        ZShape _ ->
+            brickStartRowMiddleColumnCellNumber + 1
+
+        Straight _ ->
+            brickStartRowMiddleColumnCellNumber
+
+        BShape _ ->
+            brickStartRowMiddleColumnCellNumber
+
+        PShape _ ->
+            brickStartRowMiddleColumnCellNumber
 
 
-switchThreeFormType : ThreeFormType -> ThreeFormType
-switchThreeFormType formType =
+switchSixFormTypeRight : SixFormType -> SixFormType
+switchSixFormTypeRight formType =
     case formType of
         A ->
             B
@@ -99,26 +108,35 @@ switchThreeFormType formType =
             C
 
         C ->
+            D
+
+        D ->
+            E
+
+        E ->
+            F
+
+        F ->
             A
 
 
-switchSixFormType : SixFormType -> SixFormType
-switchSixFormType formType =
+switchSixFormTypeLeft : SixFormType -> SixFormType
+switchSixFormTypeLeft formType =
     case formType of
-        F ->
-            G
-
-        G ->
-            H
-
-        H ->
-            I
-
-        I ->
-            J
-
-        J ->
-            K
-
-        K ->
+        A ->
             F
+
+        B ->
+            A
+
+        C ->
+            B
+
+        D ->
+            C
+
+        E ->
+            D
+
+        F ->
+            E

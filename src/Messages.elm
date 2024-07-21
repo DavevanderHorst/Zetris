@@ -1,7 +1,7 @@
 module Messages exposing (..)
 
 import Browser.Dom exposing (Viewport)
-import Models exposing (Color)
+import Models exposing (Color, GameCommand)
 
 
 type Msg
@@ -17,3 +17,4 @@ type Msg
     | ActivatePlayerInput
     | FullRowAnimation Int (List Int)
     | ZetrisAnimation Color Int (List Int)
+    | ExecuteGameCommand GameCommand

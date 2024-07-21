@@ -6,7 +6,6 @@ import Html.Attributes as Attr
 import Html.Events exposing (onClick)
 import Messages exposing (Msg(..))
 import Models exposing (MainModel)
-import Views.ViewHelpers exposing (attrInt)
 
 
 rightColumnView : MainModel -> Html Msg
@@ -59,7 +58,15 @@ errorView : MainModel -> Html Msg
 errorView model =
     case model.gameModel.currentBrickModel of
         Nothing ->
-            div [] [ text "No current brick model." ]
+            div []
+                [ div [] [ text "No current brick model." ]
+                , case model.error of
+                    Nothing ->
+                        div [] []
+
+                    Just error ->
+                        div [] [ text error ]
+                ]
 
         Just brickModel ->
             div []

@@ -6,4 +6,4 @@ import Messages exposing (Msg)
 
 errorScreen : Html Msg
 errorScreen =
-    div [] [ text "Windowscreen is too small to play this game." ]
+    div [] [ text "Window screen is too small to play this game." ]

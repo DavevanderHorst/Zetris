@@ -1,7 +1,7 @@
 module Functions.Brick exposing (..)
 
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..), ThreeFormType)
+import Functions.BrickForm exposing (BrickForm(..))
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.PlayFieldDictKeys exposing (getRowNumberFromPlayFieldDictKey)
 import Functions.Shapes.Bshape exposing (createBShapePlayFieldDictKeys, doesBShapeBumpWallWhenDropped, switchBShapeBrickForm)
@@ -185,34 +185,6 @@ isBrickActive maybeBrick =
 
         Just brick ->
             brick.isActive
-
-
-getStartRowNumberForBrickForm : BrickForm -> Int
-getStartRowNumberForBrickForm form =
-    case form of
-        Square _ ->
-            3
-
-        LShape _ ->
-            3
-
-        ReversedLShape _ ->
-            3
-
-        Straight _ ->
-            2
-
-        SShape _ ->
-            2
-
-        ZShape _ ->
-            2
-
-        BShape _ ->
-            3
-
-        PShape _ ->
-            3
 
 
 createPlayFieldDictKeysForBrickForm : Int -> Int -> BrickForm -> List String

@@ -22,9 +22,20 @@ evenRowColumnCells =
     unevenRowColumnCells - 1
 
 
-middleColumnCellNumber : Int
-middleColumnCellNumber =
-    Basics.round (toFloat unevenRowColumnCells / 2)
+brickStartRowNumber : Int
+brickStartRowNumber =
+    -- if switched to an uneven number, also adjust  -brickStartRowMiddleColumnCellNumber- just below
+    2
+
+
+brickStartRowMiddleColumnCellNumber : Int
+brickStartRowMiddleColumnCellNumber =
+    evenRowMiddleColumnCellNumber
+
+
+evenRowMiddleColumnCellNumber : Int
+evenRowMiddleColumnCellNumber =
+    Basics.round (toFloat evenRowColumnCells / 2)
 
 
 cellSize : Int

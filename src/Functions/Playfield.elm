@@ -1,6 +1,6 @@
 module Functions.Playfield exposing (..)
 
-import Constants.PlayFieldSizes exposing (evenRowColumnCells, middleColumnCellNumber, unevenRowColumnCells)
+import Constants.PlayFieldSizes exposing (evenRowColumnCells, evenRowMiddleColumnCellNumber, unevenRowColumnCells)
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
 import Functions.Brick exposing (getCurrentRowsFromBrick)
@@ -87,7 +87,7 @@ isCellEmpty dict key result =
                     result
 
                 else
-                    ( False, "Cell has wrong color : " ++ cellColorToString cell.color )
+                    ( False, "Cell is not empty : " ++ cellColorToString cell.color )
 
     else
         result
@@ -196,7 +196,7 @@ dropRowNumberInPlayField rowNumber numberOfRowsToDrop playField =
         -- the first half of the list always stays same number, so we can drop those already.
         let
             firstHalfColumnNumberList =
-                List.range 1 (middleColumnCellNumber - 1)
+                List.range 1 (evenRowMiddleColumnCellNumber - 1)
 
             firstHalfPlayFieldResult =
                 dropColumnNumbersInPlayFieldNormalFunc rowNumber numberOfRowsToDrop firstHalfColumnNumberList playField
@@ -213,7 +213,7 @@ dropRowNumberInPlayField rowNumber numberOfRowsToDrop playField =
                     -- next uneven row middle cell, we need to set to white
                     let
                         secondHalfColumnNumberList =
-                            List.range middleColumnCellNumber evenRowColumnCells
+                            List.range evenRowMiddleColumnCellNumber evenRowColumnCells
 
                         secondHalfPlayFieldResult =
                             dropColumnNumbersInPlayFieldOneHigherFunc rowNumber numberOfRowsToDrop secondHalfColumnNumberList firstHalfPlayField
@@ -234,7 +234,7 @@ dropRowNumberInPlayField rowNumber numberOfRowsToDrop playField =
                     -- column 8 we do after
                     let
                         secondHalfColumnNumberList =
-                            List.range (middleColumnCellNumber + 1) unevenRowColumnCells
+                            List.range (evenRowMiddleColumnCellNumber + 1) unevenRowColumnCells
 
                         secondHalfPlayFieldResult =
                             dropColumnNumbersInPlayFieldOneLowerFunc rowNumber numberOfRowsToDrop secondHalfColumnNumberList firstHalfPlayField

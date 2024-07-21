@@ -15,34 +15,33 @@ rollRandomBrickModel =
 
 tryGetRandomBrickForm : Int -> Result String BrickForm
 tryGetRandomBrickForm number =
-    Ok bShapeStartForm
+    case number of
+        1 ->
+            Ok squareStartForm
 
+        2 ->
+            Ok straightStartForm
 
+        3 ->
+            Ok sShapeStartForm
 
---case number of
---    1 ->
---        Ok squareStartForm
---
---    2 ->
---        Ok straightStartForm
---
---    3 ->
---        Ok sShapeStartForm
---
---    4 ->
---        Ok zShapeStartForm
---
---    5 ->
---        Ok lShapeStartForm
---
---    6 ->
---        Ok reversedLShapeStartForm
---
---    7 ->
---        Ok bShapeStartForm
---
---    _ ->
---        Err ("Wrong number for brick form : " ++ String.fromInt number)
+        4 ->
+            Ok zShapeStartForm
+
+        5 ->
+            Ok lShapeStartForm
+
+        6 ->
+            Ok reversedLShapeStartForm
+
+        7 ->
+            Ok bShapeStartForm
+
+        8 ->
+            Ok pShapeStartForm
+
+        _ ->
+            Err ("Wrong number for brick form : " ++ String.fromInt number)
 
 
 tryGetRandomDirection : Int -> Result String BrickMoveDirection

@@ -2,7 +2,7 @@ module Functions.GameModel exposing (..)
 
 import Constants.Errors exposing (noRowsToRemoveError, toManyRowsToRemoveError)
 import Constants.Score exposing (finishedBrickPoints)
-import Functions.GameClock exposing (addCommandToBackOfGameClock, addCommandToFrontOfGameClock)
+import Functions.GameClock exposing (addGameCommandToBackOfGameClock, addGameCommandToFrontOfGameClock)
 import Functions.GameScore exposing (addRowScoreToGameModel)
 import Functions.Playfield exposing (canBrickBePlacedInPlayField, changeRowColorInPlayField, dropRowNumberInPlayField, setBrickInPlayField)
 import Models exposing (BrickModel, Cell, Color(..), GameCommand, GameModel)
@@ -22,11 +22,11 @@ trySetNewBrickInGameModel gameModel brick =
         Ok { gameModel | tempPlayField = Just newPlayField, currentBrickModel = Just brick }
 
     else
-        Err (error ++ " TODO")
+        Err (error ++ " -- trySetNewBrickInGameModel, TODO")
 
 
-emptyGameClock : GameModel -> GameModel
-emptyGameClock gameModel =
+emptyGameClockForGameModel : GameModel -> GameModel
+emptyGameClockForGameModel gameModel =
     { gameModel | gameClock = [] }
 
 
@@ -39,7 +39,7 @@ addGameCommandToFrontOfGameModelClock : GameCommand -> GameModel -> GameModel
 addGameCommandToFrontOfGameModelClock command gameModel =
     let
         newGameClock =
-            addCommandToFrontOfGameClock command gameModel.gameClock
+            addGameCommandToFrontOfGameClock command gameModel.gameClock
     in
     { gameModel | gameClock = newGameClock }
 
@@ -48,7 +48,7 @@ addGameCommandToBackOfGameModelClock : GameCommand -> GameModel -> GameModel
 addGameCommandToBackOfGameModelClock command gameModel =
     let
         newGameClock =
-            addCommandToBackOfGameClock command gameModel.gameClock
+            addGameCommandToBackOfGameClock command gameModel.gameClock
     in
     { gameModel | gameClock = newGameClock }
 

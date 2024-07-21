@@ -1,6 +1,6 @@
 module PlayFieldGenerator exposing (..)
 
-import Constants.PlayFieldSizes exposing (evenRowColumnCells, maximumRows, middleColumnCellNumber, unevenRowColumnCells)
+import Constants.PlayFieldSizes exposing (evenRowColumnCells, evenRowMiddleColumnCellNumber, maximumRows, unevenRowColumnCells)
 import Dict exposing (Dict)
 import Functions.Base exposing (isEven)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)

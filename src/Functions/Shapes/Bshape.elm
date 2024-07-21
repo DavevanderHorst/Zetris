@@ -2,7 +2,7 @@ module Functions.Shapes.Bshape exposing (..)
 
 import Constants.PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormType)
+import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormTypeRight)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
 import Models exposing (BrickModel)
@@ -12,7 +12,7 @@ switchBShapeBrickForm : SixFormType -> BrickModel -> BrickModel
 switchBShapeBrickForm formType brick =
     let
         newFormType =
-            switchSixFormType formType
+            switchSixFormTypeRight formType
 
         newBrickDictKeys =
             createBShapePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
@@ -27,22 +27,22 @@ createBShapePlayFieldDictKeys startRowNumber startColumnNumber formType =
             makePlayFieldDictKey startRowNumber startColumnNumber
     in
     case formType of
-        F ->
+        A ->
             createFBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        G ->
+        B ->
             createGBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        H ->
+        C ->
             createHBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        I ->
+        D ->
             createIBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        J ->
+        E ->
             createJBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
-        K ->
+        F ->
             createKBShapePlayFieldDictKeys startRowNumber startColumnNumber baseKey
 
 
@@ -181,57 +181,57 @@ createKBShapePlayFieldDictKeys startRowNumber startColumnNumber firstKey =
 doesBShapeBumpWallWhenDropped : SixFormType -> BrickModel -> Bool
 doesBShapeBumpWallWhenDropped formType brick =
     case formType of
+        A ->
+            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+                True
+
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
+                True
+
+            else
+                False
+
+        B ->
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
+                True
+
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
+                True
+
+            else
+                False
+
+        C ->
+            if isEvenIsLeftAndBaseColumnIs 1 brick then
+                True
+
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
+
+            else
+                False
+
+        D ->
+            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+                True
+
+            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
+                True
+
+            else
+                False
+
+        E ->
+            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
+                True
+
+            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
+                True
+
+            else
+                False
+
         F ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
-                True
-
-            else
-                False
-
-        G ->
-            if isEvenIsLeftAndBaseColumnIs 1 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
-                True
-
-            else
-                False
-
-        H ->
-            if isEvenIsLeftAndBaseColumnIs 1 brick then
-                True
-
-            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
-                True
-
-            else
-                False
-
-        I ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
-                True
-
-            else if isUnEvenIsRightAndBaseColumnIs (unevenRowColumnCells - 1) brick then
-                True
-
-            else
-                False
-
-        J ->
-            if isUnEvenIsLeftAndBaseColumnIs 2 brick then
-                True
-
-            else if isEvenIsRightAndBaseColumnIs evenRowColumnCells brick then
-                True
-
-            else
-                False
-
-        K ->
             if isEvenIsLeftAndBaseColumnIs 1 brick then
                 True
 
