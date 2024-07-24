@@ -2,9 +2,8 @@ module Functions.GameCommand exposing (..)
 
 import Constants.Score exposing (dropDownByPlayerPoints)
 import Constants.Timers exposing (newBrickWaitTime, numberOfRowBlinks)
-import Functions.Brick exposing (dropBrickModel, moveBrickModelLeft, moveBrickModelRight, switchBrickForm)
-import Functions.Commands exposing (nextTickCmd)
-import Functions.GameModel exposing (trySetNewBrickInGameModel, tryTakeActiveBrickModelFromGameModel, updateGameModelForFinishedBrick)
+import Functions.Brick exposing (dropBrickModel, moveBrickModelLeft, moveBrickModelRight, switchBrickDropDirection, switchBrickForm)
+import Functions.GameModel exposing (setBrickInGameModel, trySetNewBrickInGameModel, tryTakeActiveBrickModelFromGameModel, updateGameModelForFinishedBrick)
 import Functions.Playfield exposing (getFullRowsAfterSettingBrick)
 import Messages exposing (Msg(..))
 import Models exposing (BrickModel, GameCommand(..), GameModel, MainModel)
@@ -39,11 +38,11 @@ executeGameCommand command model =
                         Err error ->
                             -- todo , sound animation or anything to show false move
                             -- brick hitting other bricks/wall, so cant move
-                            ( { model | error = Just error }, nextTickCmd )
+                            ( { model | error = Just error }, Cmd.none )
 
                         Ok newGameModel ->
                             -- brick moved left
-                            ( { model | gameModel = newGameModel }, nextTickCmd )
+                            ( { model | gameModel = newGameModel }, Cmd.none )
 
                 MoveRight ->
                     let
@@ -54,26 +53,37 @@ executeGameCommand command model =
                         Err error ->
                             -- todo , sound animation or anything to show false move
                             -- brick hitting other bricks/walls, so cant move.
-                            ( { model | error = Just error }, nextTickCmd )
+                            ( { model | error = Just error }, Cmd.none )
 
                         Ok newGameModel ->
                             -- brick moved right
-                            ( { model | gameModel = newGameModel }, nextTickCmd )
+                            ( { model | gameModel = newGameModel }, Cmd.none )
 
-                SwitchForm ->
+                SwitchForm switchDirection ->
                     let
                         nextBrickModel =
-                            switchBrickForm brickModel
+                            switchBrickForm switchDirection brickModel
                     in
                     case trySetNewBrickInGameModel model.gameModel nextBrickModel of
                         Err error ->
                             -- todo , sound animation or anything to show false form switch
                             -- brick hitting other bricks/walls, so cant change form.
-                            ( { model | error = Just error }, nextTickCmd )
+                            ( { model | error = Just error }, Cmd.none )
 
                         Ok newGameModel ->
                             -- brick switched forms
-                            ( { model | gameModel = newGameModel }, nextTickCmd )
+                            ( { model | gameModel = newGameModel }, Cmd.none )
+
+                SwitchDropDirection ->
+                    let
+                        nextBrickModel =
+                            switchBrickDropDirection brickModel
+                    in
+                    let
+                        newGameModel =
+                            setBrickInGameModel model.gameModel nextBrickModel
+                    in
+                    ( { model | gameModel = newGameModel }, Cmd.none )
 
 
 dropBrickCommand : Bool -> BrickModel -> MainModel -> ( MainModel, Cmd Msg )
@@ -112,10 +122,7 @@ dropBrickCommand byPlayer brickModel model =
                     in
                     if List.isEmpty fullRowsList then
                         ( { model | gameModel = finishedGameModel, error = Just err }
-                        , Cmd.batch
-                            [ nextTickCmd
-                            , Process.sleep newBrickWaitTime |> Task.perform (always MakeNewBrick)
-                            ]
+                        , Process.sleep newBrickWaitTime |> Task.perform (always MakeNewBrick)
                         )
 
                     else
@@ -126,4 +133,4 @@ dropBrickCommand byPlayer brickModel model =
 
         Ok newBrickInGameModel ->
             -- brick dropped
-            ( { model | gameModel = newBrickInGameModel }, nextTickCmd )
+            ( { model | gameModel = newBrickInGameModel }, Cmd.none )

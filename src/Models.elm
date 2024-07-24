@@ -42,7 +42,13 @@ type GameCommand
     | DropBrickByPlayer
     | MoveLeft
     | MoveRight
-    | SwitchForm
+    | SwitchForm SwitchDirection
+    | SwitchDropDirection
+
+
+type SwitchDirection
+    = ClockWise
+    | CounterClockWise
 
 
 type Color

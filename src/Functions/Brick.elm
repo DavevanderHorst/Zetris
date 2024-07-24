@@ -1,7 +1,7 @@
 module Functions.Brick exposing (..)
 
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..))
+import Functions.BrickForm exposing (BrickForm(..), switchSixFormTypeLeft, switchSixFormTypeRight)
 import Functions.BrickMoveDirection exposing (BrickMoveDirection(..), switchBrickMoveDirection)
 import Functions.PlayFieldDictKeys exposing (getRowNumberFromPlayFieldDictKey)
 import Functions.Shapes.Bshape exposing (createBShapePlayFieldDictKeys, doesBShapeBumpWallWhenDropped, switchBShapeBrickForm)
@@ -12,35 +12,53 @@ import Functions.Shapes.SShape exposing (createSShapePlayFieldDictKeys, doesSSha
 import Functions.Shapes.Square exposing (createSquarePlayFieldDictKeys, doesSquareBumpWallWhenDropped, switchSquareBrickForm)
 import Functions.Shapes.StraightShape exposing (createStraightPlayFieldDictKeys, doesStraightBumpWallWhenDropped, switchStraightShape)
 import Functions.Shapes.ZShape exposing (createZShapePlayFieldDictKeys, doesZShapeBumpWallWhenDropped, switchZShapeBrickForm)
-import Models exposing (BrickModel, Color(..))
+import Models exposing (BrickModel, Color(..), SwitchDirection(..))
 
 
-switchBrickForm : BrickModel -> BrickModel
-switchBrickForm brick =
+switchBrickDropDirection : BrickModel -> BrickModel
+switchBrickDropDirection brick =
+    let
+        newDropDirection =
+            switchBrickMoveDirection brick.direction
+    in
+    { brick | direction = newDropDirection }
+
+
+switchBrickForm : SwitchDirection -> BrickModel -> BrickModel
+switchBrickForm switchDirection brick =
+    let
+        switchCommand =
+            case switchDirection of
+                ClockWise ->
+                    switchSixFormTypeRight
+
+                CounterClockWise ->
+                    switchSixFormTypeLeft
+    in
     case brick.form of
         Square formType ->
-            switchSquareBrickForm formType brick
+            switchSquareBrickForm (switchCommand formType) brick
 
         LShape formType ->
-            switchLShapeBrickForm formType brick
+            switchLShapeBrickForm (switchCommand formType) brick
 
         ReversedLShape formType ->
-            switchReversedLShapeBrickForm formType brick
+            switchReversedLShapeBrickForm (switchCommand formType) brick
 
         Straight formType ->
-            switchStraightShape formType brick
+            switchStraightShape (switchCommand formType) brick
 
         SShape formType ->
-            switchSShapeBrickForm formType brick
+            switchSShapeBrickForm (switchCommand formType) brick
 
         ZShape formType ->
-            switchZShapeBrickForm formType brick
+            switchZShapeBrickForm (switchCommand formType) brick
 
         BShape formType ->
-            switchBShapeBrickForm formType brick
+            switchBShapeBrickForm (switchCommand formType) brick
 
         PShape formType ->
-            switchPShapeBrickForm formType brick
+            switchPShapeBrickForm (switchCommand formType) brick
 
 
 getCurrentRowsFromBrick : BrickModel -> List Int

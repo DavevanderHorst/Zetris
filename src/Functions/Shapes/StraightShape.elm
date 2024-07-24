@@ -9,11 +9,8 @@ import Models exposing (BrickModel)
 
 
 switchStraightShape : SixFormType -> BrickModel -> BrickModel
-switchStraightShape formType brick =
+switchStraightShape newFormType brick =
     let
-        newFormType =
-            switchSixFormTypeRight formType
-
         newBrickDictKeys =
             createStraightPlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
     in

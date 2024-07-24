@@ -25,6 +25,15 @@ trySetNewBrickInGameModel gameModel brick =
         Err (error ++ " -- trySetNewBrickInGameModel, TODO")
 
 
+setBrickInGameModel : GameModel -> BrickModel -> GameModel
+setBrickInGameModel gameModel brick =
+    let
+        newPlayField =
+            setBrickInPlayField brick gameModel.playField
+    in
+    { gameModel | tempPlayField = Just newPlayField, currentBrickModel = Just brick }
+
+
 emptyGameClockForGameModel : GameModel -> GameModel
 emptyGameClockForGameModel gameModel =
     { gameModel | gameClock = [] }

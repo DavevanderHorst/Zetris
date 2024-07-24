@@ -8,13 +8,13 @@ rightColumnWidth =
 
 maximumRows : Int
 maximumRows =
-    27
+    21
 
 
 unevenRowColumnCells : Int
 unevenRowColumnCells =
     -- also start row, must be uneven, so we have a middle point
-    15
+    11
 
 
 evenRowColumnCells : Int

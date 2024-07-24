@@ -2,18 +2,15 @@ module Functions.Shapes.Square exposing (..)
 
 import Constants.PlayFieldSizes exposing (evenRowColumnCells, unevenRowColumnCells)
 import Functions.Base exposing (isEven)
-import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormTypeRight)
+import Functions.BrickForm exposing (BrickForm(..), SixFormType(..), switchSixFormTypeLeft, switchSixFormTypeRight)
 import Functions.PlayFieldDictKeys exposing (makePlayFieldDictKey)
 import Functions.Shapes.Comparisons exposing (isEvenIsLeftAndBaseColumnIs, isEvenIsRightAndBaseColumnIs, isUnEvenIsLeftAndBaseColumnIs, isUnEvenIsRightAndBaseColumnIs)
-import Models exposing (BrickModel)
+import Models exposing (BrickModel, SwitchDirection(..))
 
 
 switchSquareBrickForm : SixFormType -> BrickModel -> BrickModel
-switchSquareBrickForm formType brick =
+switchSquareBrickForm newFormType brick =
     let
-        newFormType =
-            switchSixFormTypeRight formType
-
         newBrickDictKeys =
             createSquarePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
     in

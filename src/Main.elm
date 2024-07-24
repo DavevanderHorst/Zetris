@@ -18,7 +18,7 @@ import Functions.Playfield exposing (checkForZetris)
 import Functions.Random exposing (tryGetRandomBrickForm, tryGetRandomDirection)
 import Json.Decode as Decode
 import Messages exposing (Msg(..))
-import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, startSize)
+import Models exposing (BrickModel, Cell, GameCommand(..), MainModel, PlayerInput(..), Size, SwitchDirection(..), startSize)
 import PlayFieldGenerator exposing (initGameModel)
 import Process
 import Task
@@ -104,7 +104,12 @@ update msg model =
                         newModel =
                             setGameClockInMainModel newGameClock model
                     in
-                    ( newModel, Task.perform ExecuteGameCommand (Task.succeed nextCommand) )
+                    ( newModel
+                    , Cmd.batch
+                        [ Task.perform ExecuteGameCommand (Task.succeed nextCommand)
+                        , nextTickCmd
+                        ]
+                    )
 
         ExecuteGameCommand command ->
             executeGameCommand command model
@@ -287,8 +292,14 @@ handleKeyPressed key model =
                             "s" ->
                                 Just DropBrickByPlayer
 
+                            "e" ->
+                                Just (SwitchForm ClockWise)
+
+                            "q" ->
+                                Just (SwitchForm CounterClockWise)
+
                             "w" ->
-                                Just SwitchForm
+                                Just SwitchDropDirection
 
                             _ ->
                                 Nothing

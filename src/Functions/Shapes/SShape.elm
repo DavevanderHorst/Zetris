@@ -9,11 +9,8 @@ import Models exposing (BrickModel)
 
 
 switchSShapeBrickForm : SixFormType -> BrickModel -> BrickModel
-switchSShapeBrickForm formType brick =
+switchSShapeBrickForm newFormType brick =
     let
-        newFormType =
-            switchSixFormTypeRight formType
-
         newBrickDictKeys =
             createSShapePlayFieldDictKeys brick.baseRow brick.baseColumn newFormType
     in
